@@ -27,7 +27,7 @@ public class TXInfo {
         if (coinbase) {
             0 
         } else {
-            jsonSeed.inputs*.prev_out?.value?.sum() / 100000000.0 
+            jsonSeed.inputs*.prev_out.value*.longValue().sum() / 100000000.0 
         }
     }
 
@@ -37,7 +37,7 @@ public class TXInfo {
     }
     
     Number getOutputValue() {
-        jsonSeed.out*.value?.sum() / 100000000.0
+        jsonSeed.out*.value*.longValue().sum() / 100000000.0
     }
 
     Number getFeePaid() {
