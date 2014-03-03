@@ -1,39 +1,48 @@
-package com.shemnon.btc.blockchaininfo;
+package com.shemnon.btc.blockchaininfo
 
-import groovy.json.JsonSlurper;
+import com.shemnon.btc.JsonBase
+import groovy.json.JsonSlurper
 
-import java.net.URL;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by shemnon on 1 Mar 2014.
  */
-public class BlockInfo {
+public class BlockInfo extends JsonBase {
 
-    def jsonSeed
+    static Map<String, BlockInfo> blockcache = new ConcurrentHashMap<>()
 
+    private BlockInfo(def json) {
+        jsonSeed = json
+        blockcache[jsonSeed.hash] = this
+        blockcache[jsonSeed.block_index] = this
+    }
+    
     static BlockInfo query(String blockid) {
-        println " len:'${blockid.length()} block'$blockid' "
-        if (blockid.length() == 64) {
-            URL tx = new URL("http://blockchain.info/rawblock/$blockid")
-            def slurper = new JsonSlurper()
-            return new BlockInfo(jsonSeed:slurper.parseText(tx.text))
-        } else {
-            URL tx = new URL("http://blockchain.info/block-height/$blockid?format=json")
-            def slurper = new JsonSlurper()
-            return new BlockInfo(jsonSeed:slurper.parseText(tx.text).blocks[0])
+        BlockInfo bi = blockcache[blockid]
+        if (bi == null) {
+            if (blockid.length() == 64) {
+                URL tx = new URL("http://blockchain.info/rawblock/$blockid")
+                def slurper = new JsonSlurper()
+                bi = new BlockInfo(slurper.parseText(tx.text))
+            } else {
+                URL tx = new URL("http://blockchain.info/block-height/$blockid?format=json")
+                def slurper = new JsonSlurper()
+                bi = new BlockInfo(slurper.parseText(tx.text).blocks[0])
+            }                 
+            
+            TXInfo.preCache(bi.jsonSeed.txs)
         }
-    }
-    
-    String toString() {
-        println jsonSeed
-    }
-    
-    List<TXInfo> getTXs() {
-        return jsonSeed.tx.collect({tx -> new TXInfo(jsonSeed: tx)})
+        return bi
     }
 
-    def keys() {
-        return jsonSeed.keySet();
+    static BlockInfo fromJson(String jsonString) {
+        def bk = new JsonSlurper().parseText(jsonString)
+        blockcache[bk.hash] ?: new BlockInfo(bk)
     }
-    
+
+    List<TXInfo> getTXs() {
+        return jsonSeed.tx.collect {tx -> TXInfo.query(tx.hash) }
+    }
+
 }

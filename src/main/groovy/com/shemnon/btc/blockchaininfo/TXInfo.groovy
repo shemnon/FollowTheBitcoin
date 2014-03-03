@@ -1,46 +1,94 @@
 package com.shemnon.btc.blockchaininfo
 
-import groovy.json.JsonSlurper;
+import com.shemnon.btc.JsonBase
+import groovy.json.JsonSlurper
+
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by shemnon on 28 Feb 2014.
  */
-public class TXInfo {
+public class TXInfo extends JsonBase {
     
-    def jsonSeed
+    static Map<String, TXInfo> txcache = new ConcurrentHashMap<>()
+    
+    List<CoinInfo> inputs
+    List<CoinInfo> outputs
+    
+    private TXInfo(def json) {
+        jsonSeed = json
+        inputs =  coinbase ? [] :jsonSeed.inputs*.prev_out.collect {j -> CoinInfo.preCache(j)}
+        outputs = jsonSeed.out.collect {j -> CoinInfo.preCache(j)}
+
+        txcache[hash] = this
+        txcache[txIndex as String] = this
+    }
+    
+    static TXInfo query(Integer txid) {
+        query(txid as String)
+    }
     
     static TXInfo query(String txid) {
-        URL tx = new URL("http://blockchain.info/rawtx/$txid")
-        def slurper = new JsonSlurper()
-        return new TXInfo(jsonSeed:slurper.parseText(tx.text))
-    }
-    
-    List<String> getInputAddresses() {
-        jsonSeed.inputs*.prev_out.addr
-    }
-
-    List<String> getOutputAddresses() {
-        jsonSeed.out*.addr
-    }
-    
-    Number getInputValue() {
-        if (coinbase) {
-            0 
+        if (txcache.containsKey(txid)) {
+            return txcache[txid]
         } else {
-            jsonSeed.inputs*.prev_out.value*.longValue().sum() / 100000000.0 
+            TXInfo tx = new TXInfo(new JsonSlurper().parseText(
+                    new URL("http://blockchain.info/rawtx/$txid").text));
+            return tx 
         }
+    }
+    
+    static TXInfo fromJson(String jsonString) {
+        def tj = new JsonSlurper().parseText(jsonString)
+        txcache[tj.hash] ?: new TXInfo(tj)
+    }
+    
+    static void preCache (def txs) {
+        txs.each {j -> txcache[j.hash] = new TXInfo(j)}        
     }
 
     boolean isCoinbase() {
-        def inputs = jsonSeed.inputs
-        inputs.size() == 1 && inputs[0].size() == 0
-    }
-    
-    Number getOutputValue() {
-        jsonSeed.out*.value*.longValue().sum() / 100000000.0
+        List inputs = jsonSeed.inputs
+        inputs?.size() == 1 && inputs[0].size() == 0
     }
 
-    Number getFeePaid() {
+    List<String> getInputAddresses() {
+        inputs*.jsonSeed*.addr
+    }
+
+    List<String> getOutputAddresses() {
+        outputs*.jsonSeed*.addr
+    }
+    
+    double getInputValue() {
+        return inputValueSatoshi / 100000000.0
+    }
+
+    long getInputValueSatoshi() {
+        if (coinbase) {
+            0 
+        } else {
+            jsonSeed.inputs*.prev_out?.value*.longValue()?.sum() 
+        }
+    }
+
+    long getOutputValueSatoshi() {
+        jsonSeed.out*.value*.longValue()?.sum()
+    }
+    
+    double getOutputValue() {
+        outputValueSatoshi / 100000000.0
+    }
+
+    long getFeePaidSatoshi() {
+        if (coinbase) {
+            return 0;
+        } else {
+            inputValueSatoshi - outputValueSatoshi
+        } 
+    }
+    
+    double getFeePaid() {
         if (coinbase) {
             return 0;
         } else {
@@ -49,10 +97,22 @@ public class TXInfo {
     }
     
     BlockInfo getBlock() {
-        return BlockInfo.query(jsonSeed.block_height as String)
+        return BlockInfo.query(blockHeight as String)
+    }
+
+    public String getHash() {
+        jsonSeed.hash
     }
     
-    def keys() {
-        return jsonSeed.keySet();
+    public int getBlockHeight() {
+        jsonSeed.block_height
+    }
+    
+    public int getTxIndex() {
+        jsonSeed.tx_index
+    }
+    
+    public List<CoinInfo> getCoins() {
+        return inputs + outputs
     }
 }

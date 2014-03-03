@@ -1,0 +1,64 @@
+package com.shemnon.btc.blockchaininfo
+
+import com.shemnon.btc.JsonBase
+import groovy.json.JsonSlurper
+
+import java.util.concurrent.ConcurrentHashMap
+
+/**
+ * Created by shemnon on 1 Mar 2014.
+ */
+class AddressInfo extends JsonBase {
+
+    static Map<String, AddressInfo> addrcache = new ConcurrentHashMap<>()
+
+    private AddressInfo(def json) {
+        jsonSeed = json
+
+        addrcache[jsonSeed.hash160] = this
+        addrcache[jsonSeed.address] = this
+
+        // unspent outputs?
+        TXInfo.preCache(jsonSeed.txs)
+
+    }
+        
+    static AddressInfo query(String addr) {
+        if (addrcache.containsKey(addr)) {
+            return addrcache[addr]
+        } else {
+            URL addrurl = new URL("http://blockchain.info/rawaddr/$addr")
+            def slurper = new JsonSlurper()
+            AddressInfo ai = new AddressInfo(slurper.parseText(addrurl.text))
+            
+            // unspent outputs?
+            TXInfo.preCache(ai.jsonSeed.txs)
+            
+            return ai
+        }
+    }
+
+    static AddressInfo fromJson(String jsonString) {
+        def aj = new JsonSlurper().parseText(jsonString)
+        addrcache[aj.address] ?: new AddressInfo(aj)
+    }
+
+    List<TXInfo> getTxs() {
+        return jsonSeed.txs.collect {tx -> TXInfo.query(tx.hash) }
+    }
+    
+    def getBalance() {
+        return txs.collect() { tx ->
+            tx.in
+        }
+    }
+    
+    def getAddress() {
+        jsonSeed.address
+    }
+    
+    def getHash160() {
+        jsonSeed.hash160
+    }
+    
+}
