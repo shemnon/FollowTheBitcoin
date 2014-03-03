@@ -12,7 +12,7 @@ class CoinInfo extends JsonBase {
     
     static Map<String, CoinInfo> coincache = new ConcurrentHashMap()
     
-    def compkey
+    String compkey
     boolean toAddrChecked = false
     def targetTX
     
