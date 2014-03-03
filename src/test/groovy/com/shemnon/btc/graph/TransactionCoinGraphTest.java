@@ -1,7 +1,7 @@
 package com.shemnon.btc.graph;
 
-import com.shemnon.btc.blockchaininfo.TXInfo;
-import org.junit.Assert;
+import com.shemnon.btc.blockchaininfo.*;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -9,6 +9,11 @@ import org.junit.Test;
  * Created by shemnon on 2 Mar 2014.
  */
 public class TransactionCoinGraphTest {
+    
+    @BeforeClass
+    public static void loadOfflineData() {
+        OfflineData.loadOfflineData();
+    }
     
     @Test
     public void test42() {

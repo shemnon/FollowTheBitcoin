@@ -39,7 +39,11 @@ public class TXInfo extends JsonBase {
     }
     
     static TXInfo fromJson(String jsonString) {
-        def tj = new JsonSlurper().parseText(jsonString)
+        Map tj = new JsonSlurper().parseText(jsonString)
+        fromJson(tj)
+    }
+    
+    static TXInfo fromJson(Map tj) {
         txcache[tj.hash] ?: new TXInfo(tj)
     }
     

@@ -40,7 +40,11 @@ class AddressInfo extends JsonBase {
     }
 
     static AddressInfo fromJson(String jsonString) {
-        def aj = new JsonSlurper().parseText(jsonString)
+        Map aj = new JsonSlurper().parseText(jsonString)
+        fromJson(aj)
+    }
+
+    static AddressInfo fromJson(Map aj) {
         addrcache[aj.address] ?: new AddressInfo(aj)
     }
 

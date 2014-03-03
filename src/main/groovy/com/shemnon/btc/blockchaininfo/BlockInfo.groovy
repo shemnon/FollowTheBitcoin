@@ -37,7 +37,11 @@ public class BlockInfo extends JsonBase {
     }
 
     static BlockInfo fromJson(String jsonString) {
-        def bk = new JsonSlurper().parseText(jsonString)
+        Map bk = new JsonSlurper().parseText(jsonString)
+        fromJson(bk)
+    }
+
+    static BlockInfo fromJson(Map bk) {
         blockcache[bk.hash] ?: new BlockInfo(bk)
     }
 
