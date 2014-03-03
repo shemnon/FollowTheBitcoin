@@ -32,6 +32,7 @@ class AddressInfo extends JsonBase {
             AddressInfo ai = new AddressInfo(slurper.parseText(addrurl.text))
             
             // unspent outputs?
+            // Aggressively seed input txes in coins?
             TXInfo.preCache(ai.jsonSeed.txs)
             
             return ai
@@ -47,11 +48,11 @@ class AddressInfo extends JsonBase {
         return jsonSeed.txs.collect {tx -> TXInfo.query(tx.hash) }
     }
     
-    def getBalance() {
-        return txs.collect() { tx ->
-            tx.in
-        }
-    }
+//    def getBalance() {
+//        return txs.collect() { tx ->
+//            tx.in
+//        }
+//    }
     
     def getAddress() {
         jsonSeed.address

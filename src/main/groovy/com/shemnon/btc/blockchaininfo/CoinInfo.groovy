@@ -13,6 +13,8 @@ class CoinInfo extends JsonBase {
     static Map<String, CoinInfo> coincache = new ConcurrentHashMap()
     
     def compkey
+    boolean toAddrChecked = false
+    def targetTX
     
     private CoinInfo(def seed) {
         jsonSeed = seed
@@ -36,6 +38,10 @@ class CoinInfo extends JsonBase {
         coincache[coinKey(j)] ?: new CoinInfo(j)
     }
     
+    public String getAddr() {
+        return jsonSeed.addr
+    }
+    
     public double getValue() {
         return jsonSeed.value.longValue() / 100000000.0
     }
@@ -47,6 +53,14 @@ class CoinInfo extends JsonBase {
     public TXInfo getSourceTX() {
          return TXInfo.query(jsonSeed.tx_index)
     }
-
+    
+    public TXInfo getTargetTX() {
+        if (!toAddrChecked) {
+            AddressInfo addr = AddressInfo.query(addr)
+            targetTX = addr.txs.find { tx -> tx.inputs.find {coin -> coin.compkey == compkey } }
+            toAddrChecked = true
+        }
+        return targetTX
+    }
 
 }
