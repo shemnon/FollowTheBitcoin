@@ -14,59 +14,79 @@ import javafx.scene.transform.Affine;
  */
 public class ZoomPane extends Pane {
 
-    double scaleFactor = Math.sqrt(2.0d);
+    double scrollScaleFactor = 1.2;
     
     Affine transform;
+    Affine workTransform;
     Node zoomNode;
     
-    double lastX = Double.NaN;
-    double lastY = Double.NaN;
+    
+    boolean set = false;
+    double lastScale = 1.0;
+    double lastTX = 0;
+    double lastTY = 0;
+    double lastX = 0;
+    double lastY = 0;
     
 
     public ZoomPane(Node... nodes) {
         super(new Group(nodes));
         
         transform = new Affine();
+        workTransform = new Affine();
         
         getChildren().get(0).getTransforms().setAll(transform);
+        
+        setOnZoomStarted(e -> start(e.getX(), e.getY()));
+        setOnScrollStarted(e -> start(e.getX(), e.getY()));
+        setOnMousePressed(e -> start(e.getX(), e.getY()));
+        setOnZoomFinished(e -> finish());
+        setOnMouseReleased(e -> finish());
+        setOnScrollFinished(e -> finish());
         
         setOnZoom(this::zooming);
         setOnScroll(this::scrolling);
         setOnMouseDragged(this::dragging);
-        setOnMouseClicked(this::mouseDown);
-        setOnMouseReleased(this::mouseUp);
-        
-        //TOTO clip?
     }
     
     public void zooming(ZoomEvent ze) { 
-        zoom(ze.getZoomFactor(), ze.getX(), ze.getY());
+        zoom(ze.getTotalZoomFactor(), ze.getX(), ze.getY());
     }
 
     private void zoom(double zoomFactor, double x, double y) {
-        transform.appendScale(zoomFactor, zoomFactor, x, y);
-
+        workTransform.setMxx(lastScale);
+        workTransform.setMyy(lastScale);
+        workTransform.setTx(lastTX);
+        workTransform.setTy(lastTY);
+        
+        workTransform.appendScale(zoomFactor, zoomFactor, x, y);
+        
+        transform.setToTransform(
+                workTransform.getMxx(), workTransform.getMxy(), workTransform.getTx(),
+                workTransform.getMyx(), workTransform.getMyy(), workTransform.getTy());
     }
 
     public void scrolling(ScrollEvent se) {
         // get a click count...
-        double mickys = se.getDeltaY() / se.getMultiplierY();
-        if (mickys == 0) return;
-        double zoom = scaleFactor * mickys;
-        if (zoom < 0) {
-            zoom = -1/zoom;
+        double currentZoom = transform.getMxx();
+        if (se.getDeltaY() > 0) {
+            zoom(currentZoom * scrollScaleFactor, se.getX(), se.getY());
+        } else if (se.getDeltaY() < 0) {
+            zoom(currentZoom / scrollScaleFactor, se.getX(), se.getY());
         }
-        zoom(zoom, se.getX(), se.getY());
     }
 
-    public void mouseDown(MouseEvent me) {
-        lastX = me.getX();
-        lastY = me.getY();
+    public void start(double x, double y) {
+        lastScale = transform.getMxx();
+        lastTX = transform.getTx();
+        lastTY = transform.getTy();
+        lastX = x;
+        lastY = y;
+        set = true;
     }
 
-    public void mouseUp(MouseEvent me) {
-        lastX = Double.NaN;
-        lastY = Double.NaN;
+    public void finish() {
+        set = false;
     }
 
     public void dragging(MouseEvent me) {        
