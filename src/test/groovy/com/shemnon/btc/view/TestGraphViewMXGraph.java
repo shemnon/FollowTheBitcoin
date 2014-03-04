@@ -6,7 +6,6 @@ import com.shemnon.btc.graph.TransactionCoinGraphMXGraph;
 import com.sun.javafx.application.PlatformImpl;
 import javafx.application.Platform;
 import javafx.scene.Scene;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import org.junit.BeforeClass;
@@ -41,18 +40,18 @@ public class TestGraphViewMXGraph {
                 moreTXes.add(c.getTargetTX());
                 tcg.addCoin(c);
             });
-            for (int i = 0; i < 5; i++) {
-                List<TXInfo> thisTX = new ArrayList<>(moreTXes);
-                moreTXes.clear();
-                thisTX.forEach((t) -> {
-                    if (t != null && t.getOutputs() != null) {
-                        t.getOutputs().forEach(c -> {
-                            moreTXes.add(c.getTargetTX());
-                            tcg.addCoin(c);
-                        });
-                    }
-                });
-            }
+//            for (int i = 0; i < 5; i++) {
+//                List<TXInfo> thisTX = new ArrayList<>(moreTXes);
+//                moreTXes.clear();
+//                thisTX.forEach((t) -> {
+//                    if (t != null && t.getOutputs() != null) {
+//                        t.getOutputs().forEach(c -> {
+//                            moreTXes.add(c.getTargetTX());
+//                            tcg.addCoin(c);
+//                        });
+//                    }
+//                });
+//            }
             tx42.getInputs().forEach(tcg::addCoin);
             
             tcg.layout();
@@ -65,10 +64,10 @@ public class TestGraphViewMXGraph {
             
             pane.setScaleX(0.5);
             pane.setScaleY(0.5);
-            ScrollPane sp = new ScrollPane(pane);
-            sp.setPannable(true);
+
+            ZoomPane zp = new ZoomPane(pane);            
+            Scene scene = new Scene(zp);
             
-            Scene scene = new Scene(sp);
             Stage stage = new Stage();
             stage.setScene(scene);
             stage.setOnCloseRequest(e -> {stage.close(); latch.countDown();});
