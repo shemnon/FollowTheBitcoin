@@ -119,4 +119,8 @@ public class TXInfo extends JsonBase {
     public List<CoinInfo> getCoins() {
         return inputs + outputs
     }
+    
+    public List<CoinInfo> getUnspentCoins() {
+        return outputs.findAll {c -> c.getTargetTX() == null}
+    }
 }
