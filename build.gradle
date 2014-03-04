@@ -18,6 +18,8 @@ repositories {
 
 dependencies {
     testCompile 'junit:junit:4.11'
+    compile 'net.sf.jung:jung-graph-impl:2.0.1'
+    compile 'net.sf.jung:jung-visualization:2.0.1'
     compile localGroovy()
     compile files('lib/jgraphx.jar')
 }

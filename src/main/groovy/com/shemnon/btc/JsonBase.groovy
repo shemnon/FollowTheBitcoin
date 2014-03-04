@@ -9,7 +9,7 @@ class JsonBase {
     
     def jsonSeed
     
-    String toString() {
-        return "{\"type\":\"${this.class.simpleName}\", \"value\":${JsonOutput.toJson(jsonSeed)}}"
-    }
+//    String toString() {
+//        return "{\"type\":\"${this.class.simpleName}\", \"value\":${JsonOutput.toJson(jsonSeed)}}"
+//    }
 }
