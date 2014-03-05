@@ -22,13 +22,20 @@ dependencies {
     compile files('lib/jgraphx.jar')
 }
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '1.11'
+test {
+    systemProperties = [
+        'coinbase.client.id': coinbaseClientId // define in ~/.gradle/gradle.properties
+    ]
 }
 
 javafx {
     mainClass = 'com.shemnon.btc.ftm.Main'
 }
- run {
-     systemProperties = ['javax.net.debug':'all']
- }
+
+run {
+    systemProperties = ['javax.net.debug': 'all']
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '1.11'
+}
