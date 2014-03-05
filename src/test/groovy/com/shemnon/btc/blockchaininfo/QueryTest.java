@@ -17,7 +17,7 @@ public class QueryTest {
         assertEquals("1BGbGFBhsXYq6kTyjSC9AHRe1dhe76tD6i", ai.getAddress());
         assertEquals("70a419336ae604ddf73e4f8199f1d03b3c2f260b", ai.getHash160());
 
-        ai.getTxs().forEach(tx ->
+        ai.getTXs().forEach(tx ->
                 assertEquals(1, tx.getOutputs().get(0).getValueSatoshi())
         );
     }
@@ -29,7 +29,7 @@ public class QueryTest {
         assertEquals("1BGbGFBhsXYq6kTyjSC9AHRe1dhe76tD6i", ai.getAddress());
         assertEquals("70a419336ae604ddf73e4f8199f1d03b3c2f260b", ai.getHash160());
         
-        ai.getTxs().forEach(tx ->
+        ai.getTXs().forEach(tx ->
                 assertEquals(1, tx.getOutputs().get(0).getValueSatoshi())
         );
     }

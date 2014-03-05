@@ -48,7 +48,7 @@ class AddressInfo extends JsonBase {
         addrcache[aj.address] ?: new AddressInfo(aj)
     }
 
-    List<TXInfo> getTxs() {
+    List<TXInfo> getTXs() {
         return jsonSeed.txs.collect {tx -> TXInfo.query(tx.hash) }
     }
     

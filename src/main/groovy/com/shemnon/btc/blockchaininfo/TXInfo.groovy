@@ -39,8 +39,7 @@ public class TXInfo extends JsonBase {
     }
     
     static TXInfo fromJson(String jsonString) {
-        Map tj = new JsonSlurper().parseText(jsonString)
-        fromJson(tj)
+        fromJson(new JsonSlurper().parseText(jsonString))
     }
     
     static TXInfo fromJson(Map tj) {
@@ -109,7 +108,11 @@ public class TXInfo extends JsonBase {
     }
     
     public int getBlockHeight() {
-        jsonSeed.block_height
+        try {
+            jsonSeed.block_height
+        } catch (Exception ignore) {
+            return 0; // fun fact, the genesis block doesn't have a height value on blockchain.info
+        }
     }
     
     public int getTxIndex() {

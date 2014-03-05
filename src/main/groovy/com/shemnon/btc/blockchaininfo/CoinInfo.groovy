@@ -57,7 +57,7 @@ class CoinInfo extends JsonBase {
     public TXInfo getTargetTX() {
         if (!toAddrChecked) {
             AddressInfo addr = AddressInfo.query(addr)
-            targetTX = addr.txs.find { tx -> tx.inputs.find {coin -> coin.compkey == compkey } }
+            targetTX = addr.TXs.find { tx -> tx.inputs.find {coin -> coin.compkey == compkey } }
             toAddrChecked = true
         }
         return targetTX

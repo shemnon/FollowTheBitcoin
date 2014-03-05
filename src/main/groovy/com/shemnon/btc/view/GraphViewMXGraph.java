@@ -60,14 +60,19 @@ public class GraphViewMXGraph {
     }
 
     public Object addTransaction(TXInfo tx) {
-        String key = tx.getHash();
-        Object o = keyToVertexCell.get(key);
-        if (o == null || !mxGraphModel.isVertex(o)) {
-            Node n = getFXNodeForCell(tx);
-            o = mxGraph.insertVertex(mxGraph.getDefaultParent(), Integer.toHexString(tx.getTxIndex()), tx, 0, 0, n.prefWidth(0), n.prefHeight(0));
-            keyToVertexCell.put(key, o);
+        try {
+            String key = tx.getHash();
+            Object o = keyToVertexCell.get(key);
+            if (o == null || !mxGraphModel.isVertex(o)) {
+                Node n = getFXNodeForCell(tx);
+                o = mxGraph.insertVertex(mxGraph.getDefaultParent(), Integer.toHexString(tx.getTxIndex()), tx, 0, 0, n.prefWidth(0), n.prefHeight(0));
+                keyToVertexCell.put(key, o);
+            }
+            return o;
+        } catch (Exception e) {
+            System.out.println(tx.dumpJson());
+            throw e;
         }
-        return o;
     }
 
     public Object addCoin(CoinInfo ci) {
