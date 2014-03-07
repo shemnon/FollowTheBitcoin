@@ -15,16 +15,29 @@ public class CoinBaseAPI {
         this.attemptReAuth = attemptReAuth
     }
 
+    String getUserName() {
+        if (auth.checkTokens(attemptReAuth)) {
+            URL addressesURL = new URL("https://coinbase.com/api/v1/users?access_token=" + auth.accessToken)
+            URLConnection connection = addressesURL.openConnection()
+
+            JsonSlurper slurper = new JsonSlurper()
+            def results = slurper.parse(connection.inputStream.newReader())
+            return results.users[0].user.name
+        } else {
+            return null
+        }
+    }
+    
     List<CBAddress> getAddresses() {
         if (auth.checkTokens(attemptReAuth)) {
             URL addressesURL = new URL("https://coinbase.com/api/v1/addresses?access_token=" + auth.accessToken)
-            URLConnection connection = addressesURL.openConnection();
+            URLConnection connection = addressesURL.openConnection()
     
-            JsonSlurper slurper = new JsonSlurper();
+            JsonSlurper slurper = new JsonSlurper()
             def results = slurper.parse(connection.inputStream.newReader())
-            return results.addresses.collect({j -> new CBAddress(j)});
+            return results.addresses.collect({j -> new CBAddress(j)})
         } else {
-            return null;
+            return null
         }
     }
 }

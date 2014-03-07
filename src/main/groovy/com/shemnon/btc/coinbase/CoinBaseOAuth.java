@@ -40,7 +40,7 @@ public class CoinBaseOAuth {
             "response_type=code" +
             "&client_id=" + COINBASE_CLIENT_ID +
             "&redirect_uri=" + CALLBACK_URL +
-            "&scope=addresses+transactions";
+            "&scope=addresses+transactions+user";
 
     static final String COINBASE_AUTHORIZED_URL_ROOT = "https://coinbase.com/oauth/authorize/";
     WebView browser;

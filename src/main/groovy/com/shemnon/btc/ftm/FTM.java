@@ -7,6 +7,7 @@ import com.shemnon.btc.coinbase.CoinBaseAPI;
 import com.shemnon.btc.coinbase.CoinBaseOAuth;
 import com.shemnon.btc.view.*;
 import javafx.animation.*;
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -17,6 +18,9 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.web.WebView;
 import javafx.util.Duration;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**     
  * 
@@ -46,11 +50,11 @@ public class FTM {
     Duration slideTime = Duration.millis(400);
 
     Timeline sidebarTimeline;
+    
+    ExecutorService offThread = Executors.newSingleThreadExecutor();
 
     @FXML
     public void newHash(ActionEvent event) {
-        System.out.println("Hash");
-        
         switch (choiceType.getValue()) {
             case "Transaction":
                 TXInfo tx = TXInfo.query(textSearch.getText());
@@ -114,7 +118,6 @@ public class FTM {
 
     @FXML
     public void toggleSidebar(ActionEvent event) {
-        System.out.println("Toggle");
         if (toggleSidebar.isSelected()) {
             slideSidebarIn();
         } else {
@@ -123,7 +126,6 @@ public class FTM {
     }
 
     private void slideSidebarIn() {
-        System.out.println("In");
         sidebarTimeline.setRate(1);
         Duration time = sidebarTimeline.getCurrentTime();
         sidebarTimeline.stop();
@@ -131,7 +133,6 @@ public class FTM {
     }
 
     private void slideSidebarOut() {
-        System.out.println("Out");
         sidebarTimeline.setRate(-1);
         Duration time = sidebarTimeline.getCurrentTime();
         sidebarTimeline.stop();
@@ -141,24 +142,26 @@ public class FTM {
 
     @FXML
     void loginToCoinbase(ActionEvent event) {
-        System.out.println("login");
-        
         coinBaseAuth.requestLogin();
     }
 
     @FXML
     void logoutOfCoinbase(ActionEvent event) {
-        System.out.println("logout");
         coinBaseAuth.clearTokens();
     }
 
     @FXML
     void closeWebView(ActionEvent event) {
-        System.out.println("hide");
         coinBaseAuth.setVisualAuthInProgress(false);
         paneLogin.setVisible(false);
     }
 
+    
+    public void updateUserName() {
+        String un = coinBaseAPI.getUserName();
+        Platform.runLater(() -> labelUser.setText("Coinbase user: " + un));
+    }
+    
     @FXML
     void initialize() {
         try {
@@ -175,10 +178,13 @@ public class FTM {
             buttonLogout.managedProperty().bind(buttonLogout.visibleProperty());
             labelUser.managedProperty().bind(labelUser.visibleProperty());
 
+            coinBaseAuth.accessTokenProperty().addListener(change -> 
+                offThread.submit(this::updateUserName)
+            );
+            
             labelUser.visibleProperty().bind(Bindings.isNotNull(coinBaseAuth.accessTokenProperty()));
             buttonLogout.visibleProperty().bind(Bindings.isNotNull(coinBaseAuth.accessTokenProperty()));
             buttonLogin.visibleProperty().bind(Bindings.isNull(coinBaseAuth.accessTokenProperty()));
-    
     
             sidebarTimeline = new Timeline(
                     new KeyFrame(Duration.ZERO,
@@ -189,6 +195,9 @@ public class FTM {
                               new KeyValue(boxHeader.translateXProperty(), 250, Interpolator.EASE_BOTH))        
                 );
             sidebarTimeline.setAutoReverse(false);
+
+            coinBaseAPI = new CoinBaseAPI(coinBaseAuth, false);
+            updateUserName();
         } catch (Exception e) {
             e.printStackTrace(System.out);
         }
