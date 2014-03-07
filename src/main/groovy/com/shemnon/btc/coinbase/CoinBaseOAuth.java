@@ -1,6 +1,9 @@
 package com.shemnon.btc.coinbase;
 
 import groovy.json.JsonSlurper;
+import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.concurrent.Worker;
@@ -16,6 +19,8 @@ import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
 import java.util.Base64;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.prefs.Preferences;
 
 /**
@@ -41,9 +46,13 @@ public class CoinBaseOAuth {
     WebView browser;
 
     StringProperty accessToken = new SimpleStringProperty();
+    BooleanProperty visualAuthInProgress = new SimpleBooleanProperty(false);
+    
+    ExecutorService apiQueries = Executors.newSingleThreadExecutor();
 
     public CoinBaseOAuth(WebView browser) {
         this.browser = browser;
+        checkTokens(false);
     }
 
     public String loadToken(String perm) {
@@ -101,7 +110,7 @@ public class CoinBaseOAuth {
         saveToken(null, "refresh_token");
         saveToken(null, "access_token");
         saveToken(null, "expire");
-        accessToken.setValue(null);
+        Platform.runLater(() -> accessToken.setValue(null));
     }
     
     /**
@@ -124,7 +133,7 @@ public class CoinBaseOAuth {
                 } else {
                     String refreshToken = loadToken("refresh_token");
                     if (refreshToken != null) {
-                        success = attemptValidation && refreshTokens();
+                        success = attemptValidation && refreshTokens(loadToken("refresh_token"));
                     }
                 }
             } catch (Throwable t) {
@@ -140,8 +149,7 @@ public class CoinBaseOAuth {
         return success;
     }
     
-    public boolean refreshTokens() {
-        String refreshToken = loadToken("refresh_token");
+    public boolean refreshTokens(String refreshToken) {
         if (refreshToken == null) return false;
         try {
             URL tokenURL = new URL("https://coinbase.com/oauth/token");
@@ -150,7 +158,7 @@ public class CoinBaseOAuth {
             uc.setRequestMethod("POST");
             uc.setDoOutput(true);
             String postContent = "grant_type=refresh_token" +
-            "&refresh_token=" + refreshToken +
+                    "&refresh_token=" + refreshToken +
                     "&redirect_uri=" + CALLBACK_URL +
                     "&client_id=" + COINBASE_CLIENT_ID +
                     "&client_secret=" + COINBASE_CLIENT_SECRET;
@@ -166,8 +174,7 @@ public class CoinBaseOAuth {
             saveToken((String) m.get("refresh_token"), "refresh_token");
             saveToken(Long.toString(expire), "expire");
 
-            accessToken.setValue((String) m.get("access_token"));
-            
+            Platform.runLater(() -> accessToken.setValue((String) m.get("access_token")));
             return true;
         } catch (IOException e) {
             e.printStackTrace();
@@ -177,6 +184,7 @@ public class CoinBaseOAuth {
     }
     
     public void requestLogin() {
+        visualAuthInProgress.set(true);
         WebEngine webEngine = browser.getEngine();
 
         webEngine.getLoadWorker().stateProperty().addListener((ov, oldValue, newValue) -> {
@@ -184,34 +192,11 @@ public class CoinBaseOAuth {
                 String location = webEngine.getLocation();
                 if (location.startsWith(COINBASE_AUTHORIZED_URL_ROOT)) {
                     String code = location.substring(COINBASE_AUTHORIZED_URL_ROOT.length());
-                    try {
-                        URL tokenURL = new URL("https://coinbase.com/oauth/token");
-
-                        HttpURLConnection uc = (HttpURLConnection) tokenURL.openConnection();
-                        uc.setRequestMethod("POST");
-                        uc.setDoOutput(true);
-                        
-                        String postContent = "grant_type=authorization_code" +
-                                "&code=" + code +
-                                "&redirect_uri=" + CALLBACK_URL +
-                                "&client_id=" + COINBASE_CLIENT_ID +
-                                "&client_secret=" + COINBASE_CLIENT_SECRET; 
-                        uc.getOutputStream().write(postContent.getBytes());
-                        uc.connect();
-
-                        JsonSlurper slurper = new JsonSlurper();
-                        Map m = (Map) slurper.parse(new InputStreamReader(uc.getInputStream())); // TODO cleanup
-
-                        long expire = System.currentTimeMillis() + ((((Number)m.get("expires_in")).longValue()*1000));
-                        
-                        saveToken((String) m.get("access_token"), "access_token");
-                        saveToken((String) m.get("refresh_token"), "refresh_token");
-                        saveToken(Long.toString(expire), "expire");
-
-                        accessToken.setValue((String) m.get("access_token"));
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    
+                    apiQueries.submit(() -> {
+                        requestTokens(code);
+                        Platform.runLater(() -> visualAuthInProgress.set(false));
+                    });
 
                     webEngine.setOnStatusChanged(null);
                 }
@@ -220,17 +205,59 @@ public class CoinBaseOAuth {
         webEngine.load(COINBASE_OAUTH_LOGIN);
     }
 
+    private void requestTokens(String code) {
+        try {
+            URL tokenURL = new URL("https://coinbase.com/oauth/token");
+
+            HttpURLConnection uc = (HttpURLConnection) tokenURL.openConnection();
+            uc.setRequestMethod("POST");
+            uc.setDoOutput(true);
+
+            String postContent = "grant_type=authorization_code" +
+                    "&code=" + code +
+                    "&redirect_uri=" + CALLBACK_URL +
+                    "&client_id=" + COINBASE_CLIENT_ID +
+                    "&client_secret=" + COINBASE_CLIENT_SECRET;
+            uc.getOutputStream().write(postContent.getBytes());
+            uc.connect();
+
+            JsonSlurper slurper = new JsonSlurper();
+            Map m = (Map) slurper.parse(new InputStreamReader(uc.getInputStream())); // TODO cleanup
+
+            long expire = System.currentTimeMillis() + ((((Number)m.get("expires_in")).longValue()*1000));
+
+            saveToken((String) m.get("access_token"), "access_token");
+            saveToken((String) m.get("refresh_token"), "refresh_token");
+            saveToken(Long.toString(expire), "expire");
+
+            Platform.runLater(() -> accessToken.setValue((String) m.get("access_token")));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
     public String getAccessToken() {
         return accessToken.get();
     }
 
-    public void setAccessToken(String accessToken) {
-        this.accessToken.set(accessToken);
+    public void setAccessToken(String newAccessToken) {
+        Platform.runLater(() -> accessToken.setValue(newAccessToken));
     }
 
     public StringProperty accessTokenProperty() {
         return accessToken;
     }
-    
+
+    public boolean getVisualAuthInProgress() {
+        return visualAuthInProgress.get();
+    }
+
+    public BooleanProperty visualAuthInProgressProperty() {
+        return visualAuthInProgress;
+    }
+
+    public void setVisualAuthInProgress(boolean visualAuthInProgress) {
+        this.visualAuthInProgress.set(visualAuthInProgress);
+    }
 }

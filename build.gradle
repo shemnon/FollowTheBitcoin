@@ -31,10 +31,14 @@ test {
 
 javafx {
     mainClass = 'com.shemnon.btc.ftm.Main'
+    systemProperties = [
+            'coinbase.client.id': coinbaseClientId, // define in ~/.gradle/gradle.properties
+            'coinbase.client.secret': coinbaseClientSecret // define in ~/.gradle/gradle.properties
+    ]
 }
 
 run {
-    systemProperties = ['javax.net.debug': 'all']
+//    systemProperties = ['javax.net.debug': 'all']
 }
 
 task wrapper(type: Wrapper) {

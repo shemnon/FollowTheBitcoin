@@ -22,7 +22,8 @@ public class Main extends Application {
         
         Scene scene = new Scene(root);
         scene.getStylesheets().setAll(
-                 "/com/shemnon/btc/view/btc.css"
+                 "/com/shemnon/btc/view/btc.css" ,
+                 "com/shemnon/btc/ftm/ftm.css"
         );
         
         primaryStage.setScene(scene);

@@ -1,0 +1,31 @@
+.loginWebView {
+ -fx-border-width: 5;
+ -fx-border-color: black;
+ -fx-border-radius: 5;
+}
+
+.webCloseButton {
+ -fx-border-width: 1;
+ -fx-border-color: 0xf008;
+ -fx-border-radius: 3 0 3 3;
+ -fx-background-color: #f003;
+ -fx-text-fill: red;
+ -fx-padding: 0.1em 0.2em 0.1em 0.3em;
+}
+
+.headerFade {
+ -fx-background-color: linear-gradient(#fffe 0%, #fffe 60%, #fff0 100%);
+}
+
+.sideFade {
+ -fx-background-color: linear-gradient(to right, #fffe 0%, #fffe 95%, #fff0 100%);
+}
+
+.slideButton {
+    -fx-padding: 3px;
+    -fx-rotate: 90;
+    -fx-background-color: transparent;
+    -fx-border-width: 2;
+    -fx-border-color: black;
+    -fx-translate-x: -2px;
+}
