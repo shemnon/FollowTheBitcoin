@@ -30,11 +30,27 @@ test {
 }
 
 javafx {
+    profiles {
+        macosx {
+            category = 'public.app-category.finance'
+            appID 'com.shemnon.ftm.WheresMyBitcoin'
+        }
+    }
+    
+    appID 'WheresMyBitcoin'
+    appName 'Where\'s My Bitcoin'
     mainClass = 'com.shemnon.btc.ftm.Main'
     systemProperties = [
             'coinbase.client.id': coinbaseClientId, // define in ~/.gradle/gradle.properties
             'coinbase.client.secret': coinbaseClientSecret // define in ~/.gradle/gradle.properties
     ]
+
+    category = 'demo'
+    copyright = 'Copyright (c) 2014 Danno Ferrin'
+    description = '''A visual graph of the Bitcoin Blockchain and your transactions.'''
+    licenseType = '3 Clause BSD'
+    vendor = 'Danno Ferrin'
+    
 }
 
 run {
