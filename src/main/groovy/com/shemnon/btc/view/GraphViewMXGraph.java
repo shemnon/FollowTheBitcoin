@@ -8,7 +8,7 @@ import com.mxgraph.model.mxIGraphModel;
 import com.mxgraph.util.mxRectangle;
 import com.mxgraph.view.mxGraph;
 import com.mxgraph.view.mxGraphView;
-import com.shemnon.btc.JsonBase;
+import com.shemnon.btc.ftm.JsonBase;
 import com.shemnon.btc.blockchaininfo.CoinInfo;
 import com.shemnon.btc.blockchaininfo.TXInfo;
 import javafx.scene.Node;

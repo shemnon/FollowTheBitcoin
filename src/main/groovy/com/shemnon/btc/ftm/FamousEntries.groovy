@@ -1,7 +1,5 @@
 package com.shemnon.btc.ftm
 
-import com.shemnon.btc.JsonBase
-import com.shemnon.btc.JsonBaseLabel
 import com.shemnon.btc.coinbase.CBAddress
 import com.shemnon.btc.coinbase.CBTransaction
 import javafx.scene.control.TreeItem

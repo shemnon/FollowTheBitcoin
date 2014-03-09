@@ -1,4 +1,4 @@
-package com.shemnon.btc
+package com.shemnon.btc.ftm
 
 import groovy.json.JsonOutput
 

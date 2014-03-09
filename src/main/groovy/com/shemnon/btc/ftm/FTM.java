@@ -1,7 +1,5 @@
 package com.shemnon.btc.ftm;
 
-import com.shemnon.btc.JsonBase;
-import com.shemnon.btc.JsonBaseLabel;
 import com.shemnon.btc.blockchaininfo.AddressInfo;
 import com.shemnon.btc.blockchaininfo.BlockInfo;
 import com.shemnon.btc.blockchaininfo.TXInfo;

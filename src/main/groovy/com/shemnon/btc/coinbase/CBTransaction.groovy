@@ -1,6 +1,6 @@
 package com.shemnon.btc.coinbase
 
-import com.shemnon.btc.JsonBase;
+import com.shemnon.btc.ftm.JsonBase;
 
 /**
  * Created by shemnon on 5 Mar 2014.

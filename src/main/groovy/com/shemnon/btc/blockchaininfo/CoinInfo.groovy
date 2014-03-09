@@ -1,6 +1,6 @@
 package com.shemnon.btc.blockchaininfo
 
-import com.shemnon.btc.JsonBase
+import com.shemnon.btc.ftm.JsonBase
 
 import java.util.concurrent.ConcurrentHashMap
 
