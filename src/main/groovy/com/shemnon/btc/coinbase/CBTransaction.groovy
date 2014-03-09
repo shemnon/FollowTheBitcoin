@@ -9,7 +9,6 @@ public class CBTransaction extends JsonBase {
 
     CBTransaction(def seed) {
         jsonSeed = seed;
-        println jsonSeed
     }
     
     String getHash() {

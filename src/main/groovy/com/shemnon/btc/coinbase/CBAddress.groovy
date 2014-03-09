@@ -9,7 +9,6 @@ public class CBAddress extends JsonBase {
 
     CBAddress(def seed) {
         jsonSeed = seed;
-        println jsonSeed
     }
     
     String getLabel() {
@@ -21,6 +20,10 @@ public class CBAddress extends JsonBase {
     }
 
     Date getCreatedAt() {
-        return JSON_DATE.parse(jsonSeed.created_at)
+        if (jsonSeed.created_at) {
+            return JSON_DATE.parse(jsonSeed.created_at)
+        } else {
+            return null;
+        }
     }
 }

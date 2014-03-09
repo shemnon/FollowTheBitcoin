@@ -1,22 +1,24 @@
 package com.shemnon.btc.ftm;
 
 import com.shemnon.btc.JsonBase;
+import com.shemnon.btc.JsonBaseLabel;
 import com.shemnon.btc.coinbase.CBAddress;
 import com.shemnon.btc.coinbase.CBTransaction;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
+import javafx.scene.control.TreeCell;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.function.Consumer;
 
 /**
  * 
  * Created by shemnon on 7 Mar 2014.
  */
-public class CoinbaseDataCell extends ListCell<JsonBase> {
+public class CoinbaseDataCell extends TreeCell<JsonBase> {
 
     JsonBase userData; //cringe
     
@@ -33,9 +35,12 @@ public class CoinbaseDataCell extends ListCell<JsonBase> {
         this.nodeDoubleClicked = nodeDoubleClicked;
 
         type = new Label();
+        type.setWrapText(true);
         date = new Label();
+        date.setWrapText(true);
         hash = new Label();
-        dataCell = new VBox(type,date,hash);
+        hash.setWrapText(true);
+        dataCell = new VBox();
         setGraphic(dataCell);
         
         setOnMouseClicked(this::mouseClicked);
@@ -52,15 +57,21 @@ public class CoinbaseDataCell extends ListCell<JsonBase> {
     protected void updateItem(JsonBase item, boolean empty) {
         super.updateItem(item, empty);
         userData = item;
-        if (item == null) {
-            type.setText("");
-            date.setText("");
-            hash.setText("");
+        if (item == null || empty) {
+            setGraphic(null);
+            setText(null);
         } else if (item instanceof CBAddress) {
             CBAddress address = (CBAddress)item;
             type.setText("Wallet: " + address.getLabel());
-            date.setText("Created " + dateFormat.format(address.getCreatedAt()));
+            Date createdAt = address.getCreatedAt();
+            if (createdAt == null) {
+                date.setText("");
+            } else {
+                date.setText("Created " + dateFormat.format(address.getCreatedAt()));
+            }
             hash.setText(JsonBase.shortHash(address.getAddress()));
+            dataCell.getChildren().setAll(type, hash, date);
+            setGraphic(dataCell);
         } else if (item instanceof CBTransaction) {
             CBTransaction trans = (CBTransaction) item;
             if (trans.isSpend()) {
@@ -70,10 +81,19 @@ public class CoinbaseDataCell extends ListCell<JsonBase> {
             }
             date.setText(dateFormat.format(trans.getCreatedAt()));
             hash.setText(JsonBase.shortHash(trans.getHash()));
+            dataCell.getChildren().setAll(type, hash, date);
+            setGraphic(dataCell);
+        } else if (item instanceof JsonBaseLabel) {
+            type.setText(((JsonBaseLabel)item).getLabel());
+            dataCell.getChildren().setAll(type);
+            setGraphic(dataCell);
         } else {
-            type.setText("-");
-            date.setText("-");
+            type.setText(item.getClass().getName());
+            date.setText(item.dumpJson());
             hash.setText("-");
+            dataCell.getChildren().setAll(type, hash);
+            setGraphic(dataCell);
         }
+        
     }    
 }

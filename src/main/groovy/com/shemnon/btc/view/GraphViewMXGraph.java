@@ -11,7 +11,6 @@ import com.mxgraph.view.mxGraphView;
 import com.shemnon.btc.JsonBase;
 import com.shemnon.btc.blockchaininfo.CoinInfo;
 import com.shemnon.btc.blockchaininfo.TXInfo;
-import javafx.scene.CacheHint;
 import javafx.scene.Node;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -171,14 +170,13 @@ public class GraphViewMXGraph {
             
             box.setOnMouseClicked(event -> {
                 if (event.getClickCount() == 2) {
-                    System.out.println("BOOM");
                     expandTransaction(tx);
                 }
             });
             
             // This eliminates jiggly text at non 1.0 scale
-            box.setCache(true);
-            box.setCacheHint(CacheHint.QUALITY);
+//            box.setCache(true);
+//            box.setCacheHint(CacheHint.QUALITY);
             
             txToNode.put(tx, box);
             

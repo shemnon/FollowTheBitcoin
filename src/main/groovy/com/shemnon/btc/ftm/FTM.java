@@ -1,6 +1,7 @@
 package com.shemnon.btc.ftm;
 
 import com.shemnon.btc.JsonBase;
+import com.shemnon.btc.JsonBaseLabel;
 import com.shemnon.btc.blockchaininfo.AddressInfo;
 import com.shemnon.btc.blockchaininfo.BlockInfo;
 import com.shemnon.btc.blockchaininfo.TXInfo;
@@ -13,8 +14,6 @@ import javafx.animation.*;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Bindings;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -28,6 +27,7 @@ import javafx.util.Duration;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 /**     
  * 
@@ -40,16 +40,18 @@ public class FTM {
     @FXML Button buttonLogin;
     @FXML Button buttonLogout;
     @FXML ChoiceBox<String> choiceType;
-    @FXML Label labelUser;
-    @FXML ListView<JsonBase> listCoinbaseData;
     @FXML HBox loginPane;
     @FXML Pane mapPane;
     @FXML AnchorPane paneLogin;
     @FXML TextField textSearch;
     @FXML ToggleButton toggleSidebar;
+    @FXML TreeView<JsonBase> treeViewEntries;
     @FXML WebView webViewLogin;
-    
-    ObservableList<JsonBase> coinbaseDataModel;
+
+    TreeItem<JsonBase> treeRoot = new TreeItem<>(new JsonBaseLabel(""));
+    TreeItem<JsonBase> coinbaseTreeLabel = new TreeItem<>(new JsonBaseLabel("Coinbase Entries"));
+    TreeItem<JsonBase> coinbaseAddresses = new TreeItem<>(new JsonBaseLabel("Addresses"));
+    TreeItem<JsonBase> coinbaseTransactions = new TreeItem<>(new JsonBaseLabel("Transactions"));
 
     private GraphViewMXGraph gv;
     
@@ -96,7 +98,6 @@ public class FTM {
         if (Platform.isFxApplicationThread()) {
             offThread.submit(() -> expandTransaction(tx));
         } else {
-            System.out.println("Expanding transaction " + tx.getJsonSeed());
             gv.addTransaction(tx);
             tx.getInputs().forEach(coin -> {
                 gv.addTransaction(coin.getSourceTX());
@@ -179,42 +180,40 @@ public class FTM {
         transactions.removeIf(trans -> (trans.getHash() == null));
 
         Platform.runLater(() -> {
-            labelUser.setText("Coinbase user: " + un);
-            coinbaseDataModel.setAll(addresses);
-            coinbaseDataModel.addAll(transactions);
+            buttonLogout.setText("Logout " + un);
+            //noinspection Convert2Diamond,Convert2MethodRef
+            coinbaseAddresses.getChildren().setAll(addresses.stream()
+                    .map(addr -> new TreeItem<JsonBase>(addr))
+                    .collect(Collectors.toList())
+            );
+            //noinspection Convert2Diamond,Convert2MethodRef
+            coinbaseTransactions.getChildren().setAll(transactions.stream()
+                    .map(tx -> new TreeItem<JsonBase>(tx))
+                    .collect(Collectors.toList())
+            );
             showSidebar();
             toggleSidebar.setSelected(true);
         });
     }
     
     public void expandObject(JsonBase jbo) {
-        System.out.println("Expand!" + jbo);
         if (Platform.isFxApplicationThread()) {
             offThread.submit(() -> expandObject(jbo));
         } else {
             // thunk out coinbase to blockchain
-            if (jbo != null) {
-                System.out.println(jbo.getClass());
-                System.out.println(jbo.getJsonSeed());
-            }
             JsonBase jb = jbo;
             if (jb instanceof CBAddress) {
-                System.out.println("is CBAddress");
                jb = AddressInfo.query(((CBAddress)jb).getAddress()); 
             } else if (jb instanceof CBTransaction) {
-                System.out.println("is CBTransaction");
                 jb = TXInfo.query(((CBTransaction)jb).getHash());
             }
             
             // expand blockchain 
             if (jb instanceof AddressInfo) {
-                System.out.println("is AddressInfo");
                 expandAddress((AddressInfo)jb);
             } else if (jb instanceof TXInfo) {
-                System.out.println("is TXInfo");
                 expandTransaction((TXInfo)jb);
             } else if (jb instanceof BlockInfo) {
-                System.out.println("is BlockInfo");
                 expandBlock((BlockInfo)jb);
             } else {
                 System.out.println("playSound(StandardSounds.SAD_TROMBONE)");
@@ -229,18 +228,22 @@ public class FTM {
     @FXML
     void initialize() {
         try {
-            coinbaseDataModel = FXCollections.observableArrayList();
-            listCoinbaseData.setItems(coinbaseDataModel);
+            //noinspection unchecked
+            treeRoot.getChildren().setAll(coinbaseTreeLabel, FamousEntries.createFamousTree());
+            //noinspection unchecked
+            coinbaseTreeLabel.getChildren().setAll(coinbaseAddresses, coinbaseTransactions);
+            
+            treeViewEntries.setRoot(treeRoot);
 
-            listCoinbaseData.setCellFactory(list -> new CoinbaseDataCell(jd -> {
+            treeViewEntries.setCellFactory(list -> new CoinbaseDataCell(jd -> {
                 expandObject(jd);
                 offThread.submit(() -> Platform.runLater(() -> {
                     gv.layout();
                     gv.rebuildGraph();
                 }));
             }));
-            listCoinbaseData.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-            listCoinbaseData.getSelectionModel().getSelectedItems().addListener((InvalidationListener) event -> updateHilights());
+            treeViewEntries.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+            treeViewEntries.getSelectionModel().getSelectedItems().addListener((InvalidationListener) event -> updateHilights());
             
             gv = new GraphViewMXGraph();
             ZoomPane zp = new ZoomPane(gv.getGraphPane());
@@ -253,9 +256,7 @@ public class FTM {
 
             buttonLogin.managedProperty().bind(buttonLogin.visibleProperty());
             buttonLogout.managedProperty().bind(buttonLogout.visibleProperty());
-            labelUser.managedProperty().bind(labelUser.visibleProperty());
 
-            labelUser.visibleProperty().bind(Bindings.isNotNull(coinBaseAuth.accessTokenProperty()));
             buttonLogout.visibleProperty().bind(Bindings.isNotNull(coinBaseAuth.accessTokenProperty()));
             buttonLogin.visibleProperty().bind(Bindings.isNull(coinBaseAuth.accessTokenProperty()));
     

@@ -152,7 +152,6 @@ public class CoinBaseOAuth {
     
     public boolean refreshTokens(String refreshToken) {
         if (refreshToken == null) {
-            System.out.println("No Token for you!");
             return false;
         }
         try {
@@ -179,7 +178,6 @@ public class CoinBaseOAuth {
             saveToken(Long.toString(expire), "expire");
 
             Platform.runLater(() -> accessToken.setValue((String) m.get("access_token")));
-            System.out.println("Refreshed!");
             return true;
         } catch (IOException e) {
             e.printStackTrace();

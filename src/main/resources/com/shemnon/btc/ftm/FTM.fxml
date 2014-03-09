@@ -16,16 +16,17 @@
         <HBox fx:id="boxHeader" spacing="10.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
             <children>
                 <ToggleButton fx:id="toggleSidebar" focusTraversable="false" mnemonicParsing="false" onAction="#toggleSidebar" styleClass="slideButton">
-<font>
-<Font name="System Bold" size="14.0" />
-</font>
-<graphic>
-<ImageView>
-<image>
-<Image url="@nb-24.png" />
-</image>
-</ImageView>
-</graphic></ToggleButton>
+                    <font>
+                        <Font name="System Bold" size="14.0" />
+                    </font>
+                    <graphic>
+                        <ImageView>
+                            <image>
+                                <Image url="@nb-24.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </ToggleButton>
                 <ChoiceBox fx:id="choiceType" minHeight="-Infinity" minWidth="-Infinity" prefWidth="110.0">
                     <items>
                         <FXCollections fx:factory="observableArrayList">
@@ -52,16 +53,11 @@
             <children>
                 <FlowPane alignment="BASELINE_LEFT">
                     <children>
-                        <Label fx:id="labelUser" text="Logged in " HBox.hgrow="NEVER" />
                         <Button fx:id="buttonLogin" mnemonicParsing="false" onAction="#loginToCoinbase" text="Login to CoinBase" HBox.hgrow="NEVER" />
                         <Button fx:id="buttonLogout" mnemonicParsing="false" onAction="#logoutOfCoinbase" text="Logout" HBox.hgrow="NEVER" />
                     </children>
                 </FlowPane>
-                <ListView fx:id="listCoinbaseData" maxHeight="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefWidth="180.0" VBox.vgrow="ALWAYS">
-                    <VBox.margin>
-                        <Insets />
-                    </VBox.margin>
-                </ListView>
+                <TreeView fx:id="treeViewEntries" showRoot="false" VBox.vgrow="ALWAYS" />
             </children>
             <padding>
                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
