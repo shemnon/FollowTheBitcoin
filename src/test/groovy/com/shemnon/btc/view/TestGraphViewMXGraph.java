@@ -30,7 +30,7 @@ public class TestGraphViewMXGraph {
         PlatformImpl.startup(() -> {});
         CountDownLatch latch = new CountDownLatch(1);
         Platform.runLater(() ->  {
-            GraphViewMXGraph gv = new GraphViewMXGraph();
+            GraphViewMXGraph gv = new GraphViewMXGraph((event, tx) -> {});
     
             TXInfo tx42 = TXInfo.query("3a1b9e330d32fef1ee42f8e86420d2be978bbe0dc5862f17da9027cf9e11f8c4");
             gv.addTransaction(tx42);

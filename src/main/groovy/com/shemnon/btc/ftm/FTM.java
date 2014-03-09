@@ -14,6 +14,8 @@ import javafx.animation.*;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Bindings;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -27,7 +29,11 @@ import javafx.util.Duration;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
+
+import static javafx.beans.binding.Bindings.isEmpty;
+import static javafx.beans.binding.Bindings.not;
 
 /**     
  * 
@@ -43,6 +49,7 @@ public class FTM {
     @FXML HBox loginPane;
     @FXML Pane mapPane;
     @FXML AnchorPane paneLogin;
+    @FXML ProgressIndicator progressIndicator;
     @FXML TextField textSearch;
     @FXML ToggleButton toggleSidebar;
     @FXML TreeView<JsonBase> treeViewEntries;
@@ -62,7 +69,19 @@ public class FTM {
 
     Timeline sidebarTimeline;
     
-    ExecutorService offThread = Executors.newSingleThreadExecutor();
+    ExecutorService offThreadExecutor = Executors.newSingleThreadExecutor();
+    ObservableList<Future<?>> futures = FXCollections.observableArrayList();
+    
+    public void offThread(Runnable r) {
+        Future<?> f = offThreadExecutor.submit(r);
+        futures.add(f);
+        Timeline t = new Timeline(new KeyFrame(Duration.millis(100),
+                event -> 
+                    futures.removeIf( it -> it.isDone())
+                ));
+        t.setCycleCount(Animation.INDEFINITE);
+        t.play();
+    }
 
     @FXML
     public void newHash(ActionEvent event) {
@@ -80,15 +99,12 @@ public class FTM {
                 expandBlock(bi);
                 break;
         }
-        offThread.submit(() -> Platform.runLater(() -> {
-            gv.layout();
-            gv.rebuildGraph();
-        }));
+        graphNeedsUpdating();
     }
 
     private void expandBlock(BlockInfo bi) {
         if (Platform.isFxApplicationThread()) {
-            offThread.submit(() -> expandBlock(bi));
+            offThread(() -> expandBlock(bi));
         } else {
             bi.getTXs().forEach(this::expandTransaction);
         }
@@ -96,7 +112,7 @@ public class FTM {
 
     private void expandTransaction(TXInfo tx) {
         if (Platform.isFxApplicationThread()) {
-            offThread.submit(() -> expandTransaction(tx));
+            offThread(() -> expandTransaction(tx));
         } else {
             gv.addTransaction(tx);
             tx.getInputs().forEach(coin -> {
@@ -114,7 +130,7 @@ public class FTM {
 
     private void expandAddress(AddressInfo ai) {
         if (Platform.isFxApplicationThread()) {
-            offThread.submit(() -> expandAddress(ai));
+            offThread(() -> expandAddress(ai));
         } else {
             ai.getTXs().forEach(this::expandTransaction);
         }
@@ -122,8 +138,11 @@ public class FTM {
 
     @FXML
     public void onReset(ActionEvent event) {
-        System.out.println("Reset");
+        gv.reset();
+        gv.layout();
+        gv.rebuildGraph();
     }
+    
     @FXML
     public void onCenter(ActionEvent event) {
         System.out.println("Center");
@@ -198,7 +217,7 @@ public class FTM {
     
     public void expandObject(JsonBase jbo) {
         if (Platform.isFxApplicationThread()) {
-            offThread.submit(() -> expandObject(jbo));
+            offThread(() -> expandObject(jbo));
         } else {
             // thunk out coinbase to blockchain
             JsonBase jb = jbo;
@@ -228,6 +247,8 @@ public class FTM {
     @FXML
     void initialize() {
         try {
+            progressIndicator.visibleProperty().bind(not(isEmpty(futures)));
+            
             //noinspection unchecked
             treeRoot.getChildren().setAll(coinbaseTreeLabel, FamousEntries.createFamousTree());
             //noinspection unchecked
@@ -237,15 +258,17 @@ public class FTM {
 
             treeViewEntries.setCellFactory(list -> new CoinbaseDataCell(jd -> {
                 expandObject(jd);
-                offThread.submit(() -> Platform.runLater(() -> {
-                    gv.layout();
-                    gv.rebuildGraph();
-                }));
+                graphNeedsUpdating();
             }));
             treeViewEntries.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
             treeViewEntries.getSelectionModel().getSelectedItems().addListener((InvalidationListener) event -> updateHilights());
             
-            gv = new GraphViewMXGraph();
+            gv = new GraphViewMXGraph((event, tx) -> {
+                if (event.getClickCount() == 2) {
+                    expandTransaction(tx);
+                    graphNeedsUpdating();
+                }
+            });
             ZoomPane zp = new ZoomPane(gv.getGraphPane());
             mapPane.getChildren().setAll(zp);
             
@@ -271,11 +294,18 @@ public class FTM {
             sidebarTimeline.setAutoReverse(false);
 
             coinBaseAPI = new CoinBaseAPI(coinBaseAuth, false, false);
-            coinBaseAuth.accessTokenProperty().addListener(change -> offThread.submit(this::updateCoinbaseData));
-            offThread.submit(() -> coinBaseAuth.checkTokens(true, false));
+            coinBaseAuth.accessTokenProperty().addListener(change -> offThread(this::updateCoinbaseData));
+            offThread(() -> coinBaseAuth.checkTokens(true, false));
             
         } catch (Exception e) {
             e.printStackTrace(System.out);
         }
+    }
+
+    private void graphNeedsUpdating() {
+        offThread(() -> Platform.runLater(() -> {
+            gv.layout();
+            gv.rebuildGraph();
+        }));
     }
 }

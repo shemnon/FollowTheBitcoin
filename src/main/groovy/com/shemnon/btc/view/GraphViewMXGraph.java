@@ -12,6 +12,7 @@ import com.shemnon.btc.JsonBase;
 import com.shemnon.btc.blockchaininfo.CoinInfo;
 import com.shemnon.btc.blockchaininfo.TXInfo;
 import javafx.scene.Node;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -25,6 +26,7 @@ import java.text.NumberFormat;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiConsumer;
 
 /**
  * 
@@ -33,6 +35,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class GraphViewMXGraph {
     
     NumberFormat btcFormat = new DecimalFormat("\u0e3f###,###.### ### ###");
+    
+    BiConsumer<MouseEvent, TXInfo> clickHandler;
 
     mxGraph mxGraph;
     mxIGraphModel mxGraphModel;
@@ -45,14 +49,13 @@ public class GraphViewMXGraph {
     Map<CoinInfo, Node> coinToNode = new ConcurrentHashMap<>();
 
     Pane graphPane;
-    
-    public GraphViewMXGraph() {
+
+    public GraphViewMXGraph(BiConsumer<MouseEvent, TXInfo> clickHandler) {
+        this.clickHandler = clickHandler;
+
         mxGraph = new mxGraph();
         mxGraphModel = mxGraph.getModel();
         mxGraphView = mxGraph.getView();
-
-        //mxGraphLayout = new mxCompactTreeLayout(mxGraph);
-        //mxGraphLayout.setUseBoundingBox(true);
 
         mxGraphLayout = new mxHierarchicalLayout(mxGraph, SwingConstants.NORTH);
         
@@ -168,11 +171,7 @@ public class GraphViewMXGraph {
             VBox box = new VBox(hash, btc, date, index, coins);
             box.getStyleClass().setAll("tx");
             
-            box.setOnMouseClicked(event -> {
-                if (event.getClickCount() == 2) {
-                    expandTransaction(tx);
-                }
-            });
+            box.setOnMouseClicked(event -> clickHandler.accept(event, tx));
             
             // This eliminates jiggly text at non 1.0 scale
 //            box.setCache(true);
@@ -183,5 +182,19 @@ public class GraphViewMXGraph {
             return box;
         }
     }
-    
+
+    public void reset() {
+        mxGraph = new mxGraph();
+        mxGraphModel = mxGraph.getModel();
+        mxGraphView = mxGraph.getView();
+
+        mxGraphLayout = new mxHierarchicalLayout(mxGraph, SwingConstants.NORTH);
+
+        keyToVertexCell = new ConcurrentHashMap<>();
+        keyToEdgeCell = new ConcurrentHashMap<>();
+        txToNode = new ConcurrentHashMap<>();
+        coinToNode = new ConcurrentHashMap<>();
+        
+        graphPane.getChildren().clear();
+    }
 }
