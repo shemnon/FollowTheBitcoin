@@ -6,7 +6,7 @@
 
 .webCloseButton {
  -fx-border-width: 1;
- -fx-border-color: 0xf008;
+ -fx-border-color: #f008;
  -fx-border-radius: 3 0 3 3;
  -fx-background-color: #f003;
  -fx-text-fill: red;
@@ -22,10 +22,13 @@
 }
 
 .slideButton {
-    -fx-padding: 3px;
-    -fx-rotate: 90;
+    -fx-padding: 0px;
     -fx-background-color: transparent;
-    -fx-border-width: 2;
-    -fx-border-color: black;
-    -fx-translate-x: -2px;
+    -fx-border-width: 0;
+}
+
+.slideButton:selected {
+    -fx-padding: 0px;
+    -fx-background-color: #3333;
+    -fx-border-width: 0;
 }

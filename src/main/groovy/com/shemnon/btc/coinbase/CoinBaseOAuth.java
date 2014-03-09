@@ -52,7 +52,6 @@ public class CoinBaseOAuth {
 
     public CoinBaseOAuth(WebView browser) {
         this.browser = browser;
-        checkTokens(false);
     }
 
     public String loadToken(String perm) {
@@ -115,10 +114,12 @@ public class CoinBaseOAuth {
     
     /**
      * 
-     * @param attemptValidation If the tokens are invalid, attempt validation
+     *
+     * @param attemptRefresh If tokens are out of date, attempt a refresh
+     * @param attemptLogin If the tokens are invalid and refresh fails, attempt login
      * @return true if tokens are immediatly valid.  
      */
-    public boolean checkTokens(boolean attemptValidation) {
+    public boolean checkTokens(boolean attemptRefresh, boolean attemptLogin) {
         boolean success = false;
         do {
             try {
@@ -128,12 +129,12 @@ public class CoinBaseOAuth {
                 time = Long.parseLong(xp);
 
                 if (System.currentTimeMillis() < time) {
-                    accessToken.setValue(loadToken("access_token"));
+                    Platform.runLater(() -> accessToken.setValue(loadToken("access_token")));
                     success = true;
                 } else {
                     String refreshToken = loadToken("refresh_token");
                     if (refreshToken != null) {
-                        success = attemptValidation && refreshTokens(loadToken("refresh_token"));
+                        success = attemptRefresh && refreshTokens(refreshToken);
                     }
                 }
             } catch (Throwable t) {
@@ -142,7 +143,7 @@ public class CoinBaseOAuth {
             }
         } while (false);
         
-        if (!success && attemptValidation) {
+        if (!success && attemptLogin) {
             requestLogin();
         }
          
@@ -150,7 +151,10 @@ public class CoinBaseOAuth {
     }
     
     public boolean refreshTokens(String refreshToken) {
-        if (refreshToken == null) return false;
+        if (refreshToken == null) {
+            System.out.println("No Token for you!");
+            return false;
+        }
         try {
             URL tokenURL = new URL("https://coinbase.com/oauth/token");
 
@@ -175,6 +179,7 @@ public class CoinBaseOAuth {
             saveToken(Long.toString(expire), "expire");
 
             Platform.runLater(() -> accessToken.setValue((String) m.get("access_token")));
+            System.out.println("Refreshed!");
             return true;
         } catch (IOException e) {
             e.printStackTrace();

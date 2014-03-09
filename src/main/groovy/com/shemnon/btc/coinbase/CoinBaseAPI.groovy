@@ -8,15 +8,17 @@ import groovy.json.JsonSlurper;
 public class CoinBaseAPI {
     
     CoinBaseOAuth auth
-    boolean attemptReAuth
+    boolean attemptRefresh
+    boolean attemptLogin
 
-    CoinBaseAPI(CoinBaseOAuth auth, boolean attemptReAuth = true) {
+    CoinBaseAPI(CoinBaseOAuth auth, boolean attemptRefresh = true, boolean attemptLogin = true) {
         this.auth = auth
-        this.attemptReAuth = attemptReAuth
+        this.attemptRefresh = attemptRefresh
+        this.attemptLogin = attemptLogin
     }
 
     String getUserName() {
-        if (auth.checkTokens(attemptReAuth)) {
+        if (auth.checkTokens(attemptRefresh, attemptLogin)) {
             URL addressesURL = new URL("https://coinbase.com/api/v1/users?access_token=" + auth.accessToken)
             URLConnection connection = addressesURL.openConnection()
 
@@ -29,13 +31,28 @@ public class CoinBaseAPI {
     }
     
     List<CBAddress> getAddresses() {
-        if (auth.checkTokens(attemptReAuth)) {
+        if (auth.checkTokens(attemptRefresh, attemptLogin)) {
             URL addressesURL = new URL("https://coinbase.com/api/v1/addresses?access_token=" + auth.accessToken)
             URLConnection connection = addressesURL.openConnection()
     
             JsonSlurper slurper = new JsonSlurper()
             def results = slurper.parse(connection.inputStream.newReader())
-            return results.addresses.collect({j -> new CBAddress(j)})
+            return results.addresses*.address.collect({j -> new CBAddress(j)})
+        } else {
+            return null
+        }
+    }
+
+    List<CBTransaction> getTransactions() {
+        if (auth.checkTokens(attemptRefresh, attemptLogin)) {
+            URL addressesURL = new URL("https://coinbase.com/api/v1/transactions?access_token=" + auth.accessToken)
+            URLConnection connection = addressesURL.openConnection()
+    
+            JsonSlurper slurper = new JsonSlurper()
+            def results = slurper.parse(connection.inputStream.newReader())
+            
+            // for now we just care about the first page, take what is there
+            return results.transactions*.transaction.collect({j -> new CBTransaction(j)})
         } else {
             return null
         }

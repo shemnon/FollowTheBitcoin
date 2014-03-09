@@ -3,6 +3,8 @@ package com.shemnon.btc.blockchaininfo
 import com.shemnon.btc.JsonBase
 import groovy.json.JsonSlurper
 
+import java.text.DateFormat
+import java.text.SimpleDateFormat
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -14,6 +16,8 @@ public class TXInfo extends JsonBase {
     
     List<CoinInfo> inputs
     List<CoinInfo> outputs
+    
+    protected static final DateFormat dateFormat =  new SimpleDateFormat("yy-MM-dd HH:mm");
     
     private TXInfo(def json) {
         jsonSeed = json
@@ -125,5 +129,18 @@ public class TXInfo extends JsonBase {
     
     public List<CoinInfo> getUnspentCoins() {
         return outputs.findAll {c -> c.getTargetTX() == null}
+    }
+    
+    public long getTimeMs() {
+        return jsonSeed.time
+    }
+    
+    public String getTimeString() {
+        Integer time = jsonSeed.time;
+        if (time != null) {
+            return dateFormat.format(new Date(time.longValue() * 1000))
+        } else {
+            return "?";
+        }
     }
 }

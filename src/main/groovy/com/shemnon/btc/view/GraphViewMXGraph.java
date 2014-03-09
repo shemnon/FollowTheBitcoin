@@ -11,6 +11,7 @@ import com.mxgraph.view.mxGraphView;
 import com.shemnon.btc.JsonBase;
 import com.shemnon.btc.blockchaininfo.CoinInfo;
 import com.shemnon.btc.blockchaininfo.TXInfo;
+import javafx.scene.CacheHint;
 import javafx.scene.Node;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -32,7 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class GraphViewMXGraph {
     
-    NumberFormat btcFormat = new DecimalFormat("\u0e3f#.########");
+    NumberFormat btcFormat = new DecimalFormat("\u0e3f###,###.### ### ###");
 
     mxGraph mxGraph;
     mxIGraphModel mxGraphModel;
@@ -145,6 +146,14 @@ public class GraphViewMXGraph {
     public Pane getGraphPane() {
         return graphPane;
     }
+    
+    public void expandTransaction(TXInfo tx) {
+        tx.getOutputs().forEach(this::addCoin);
+        tx.getInputs().forEach(this::addCoin);
+        
+        layout();
+        rebuildGraph();
+    }
 
     Node createTXNode(TXInfo tx) {
         if (txToNode.containsKey(tx)) {
@@ -152,12 +161,24 @@ public class GraphViewMXGraph {
         } else {
             Text hash = new Text(JsonBase.shortHash(tx.getHash()));
             Text btc = new Text(btcFormat.format(tx.getInputValue()));
-            Text index = new Text("tx #" + tx.getTxIndex() + " @ " + tx.getBlockHeight());
+            Text date = new Text(tx.getTimeString());
+            Text index = new Text("Block# " + tx.getBlockHeight());
             
-            Text coins = new Text(tx.getOutputs().size() + " outputs " + tx.getUnspentCoins().size() + " unspent");
+            Text coins = new Text(tx.getInputs().size() + " in " + tx.getOutputs().size() + " out " + tx.getUnspentCoins().size() + " unspent");
 
-            VBox box = new VBox(hash, btc, index, coins);
+            VBox box = new VBox(hash, btc, date, index, coins);
             box.getStyleClass().setAll("tx");
+            
+            box.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2) {
+                    System.out.println("BOOM");
+                    expandTransaction(tx);
+                }
+            });
+            
+            // This eliminates jiggly text at non 1.0 scale
+            box.setCache(true);
+            box.setCacheHint(CacheHint.QUALITY);
             
             txToNode.put(tx, box);
             

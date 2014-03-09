@@ -42,7 +42,7 @@ public class OAuthLoginTest {
         System.out.println(cbl.loadToken("expire"));
     }
 
-    @Test
+    //@Test
     public void testSimpleLogin() throws InterruptedException {
 
         CountDownLatch waitForIt = new CountDownLatch(1);
@@ -53,6 +53,7 @@ public class OAuthLoginTest {
             loginView.setPrefHeight(600);
 
             CoinBaseOAuth cbl = new CoinBaseOAuth(loginView);
+            cbl.checkTokens(true, true);
 
             Scene theScene = new Scene(loginView);
             Stage theStage = new Stage();
@@ -68,7 +69,7 @@ public class OAuthLoginTest {
                 addresses.forEach(a -> System.out.println(a.getJsonSeed()));
                 waitForIt.countDown();
             });
-            if (!cbl.checkTokens(true)) {
+            if (!cbl.checkTokens(true, true)) {
                 theStage.show();
             }
         });
@@ -80,11 +81,23 @@ public class OAuthLoginTest {
     public void getAddresses() {
         CoinBaseOAuth cbl = new CoinBaseOAuth(null);
         
-        Assume.assumeTrue(cbl.checkTokens(false));
+        Assume.assumeTrue(cbl.checkTokens(true, false));
 
         CoinBaseAPI cbapi = new CoinBaseAPI(cbl);
         List<CBAddress> addresses = cbapi.getAddresses();
         System.out.println(addresses);
         addresses.forEach(a -> System.out.println(a.getJsonSeed())); 
+    }
+
+    @Test
+    public void getTransactions() {
+        CoinBaseOAuth cbl = new CoinBaseOAuth(null);
+        
+        Assume.assumeTrue(cbl.checkTokens(true, false));
+
+        CoinBaseAPI cbapi = new CoinBaseAPI(cbl);
+        List<CBTransaction> transactions = cbapi.getTransactions();
+        System.out.println(transactions);
+        transactions.forEach(t -> System.out.println(t.getJsonSeed())); 
     }
 }

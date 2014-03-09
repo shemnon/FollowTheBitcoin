@@ -28,6 +28,8 @@ public class Main extends Application {
         
         primaryStage.setScene(scene);
         
+        primaryStage.setOnHidden(exit -> System.exit(0));
+        
         primaryStage.show();
         
     }
