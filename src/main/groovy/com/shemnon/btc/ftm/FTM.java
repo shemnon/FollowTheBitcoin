@@ -2,21 +2,26 @@ package com.shemnon.btc.ftm;
 
 import com.shemnon.btc.blockchaininfo.AddressInfo;
 import com.shemnon.btc.blockchaininfo.BlockInfo;
+import com.shemnon.btc.blockchaininfo.CoinInfo;
 import com.shemnon.btc.blockchaininfo.TXInfo;
 import com.shemnon.btc.coinbase.CBAddress;
 import com.shemnon.btc.coinbase.CBTransaction;
 import com.shemnon.btc.coinbase.CoinBaseAPI;
 import com.shemnon.btc.coinbase.CoinBaseOAuth;
-import com.shemnon.btc.view.*;
+import com.shemnon.btc.view.GraphViewMXGraph;
+import com.shemnon.btc.view.ZoomPane;
 import javafx.animation.*;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -33,7 +38,7 @@ import java.util.stream.Collectors;
 import static javafx.beans.binding.Bindings.isEmpty;
 import static javafx.beans.binding.Bindings.not;
 
-/**     
+/**
  * 
  * Created by shemnon on 4 Mar 2014.
  */
@@ -45,6 +50,7 @@ public class FTM {
     @FXML Button buttonLogout;
     @FXML ChoiceBox<String> choiceType;
     @FXML HBox loginPane;
+    @FXML Label labelProgressBacklog;
     @FXML Pane mapPane;
     @FXML AnchorPane paneLogin;
     @FXML ProgressIndicator progressIndicator;
@@ -57,26 +63,45 @@ public class FTM {
     TreeItem<JsonBase> coinbaseTreeLabel = new TreeItem<>(new JsonBaseLabel("Coinbase Entries"));
     TreeItem<JsonBase> coinbaseAddresses = new TreeItem<>(new JsonBaseLabel("Addresses"));
     TreeItem<JsonBase> coinbaseTransactions = new TreeItem<>(new JsonBaseLabel("Transactions"));
-
-    private GraphViewMXGraph gv;
-    
     CoinBaseOAuth coinBaseAuth;
     CoinBaseAPI coinBaseAPI;
-    
     Duration slideTime = Duration.millis(400);
-
     Timeline sidebarTimeline;
-    
     ExecutorService offThreadExecutor = Executors.newSingleThreadExecutor();
     ObservableList<Future<?>> futures = FXCollections.observableArrayList();
-    
+    ObjectProperty<JsonBase> menuSelectedItem = new SimpleObjectProperty<>(null);
+    MenuItem miExpand = new MenuItem("Expand");
+    MenuItem miExpandOutputs = new MenuItem("Expand Outputs");
+    MenuItem miExpandAllOutputs = new MenuItem("Expand All Outputs");
+    MenuItem miExpandInputs = new MenuItem("Expand Inputs");
+    MenuItem miExpandAllInputs = new MenuItem("Expand All Inputs");
+    MenuItem miRemoveTX = new MenuItem("Remove Transaction");
+    ContextMenu nodeContextMenu = new ContextMenu(
+            miExpand,
+            new SeparatorMenuItem(),
+            miExpandOutputs,
+            miExpandAllOutputs,
+            new SeparatorMenuItem(),
+            miExpandInputs,
+            miExpandAllInputs,
+            new SeparatorMenuItem(),
+            miRemoveTX
+    );
+    private GraphViewMXGraph gv;
+
     public void offThread(Runnable r) {
         Future<?> f = offThreadExecutor.submit(r);
         futures.add(f);
         Timeline t = new Timeline(new KeyFrame(Duration.millis(100),
-                event -> 
-                    futures.removeIf( it -> it.isDone())
-                ));
+                event -> {
+                    futures.removeIf(it -> it.isDone());
+                    if (futures.isEmpty()) {
+                        labelProgressBacklog.setText("");
+                    } else {
+                        labelProgressBacklog.setText(Integer.toString(futures.size()));
+                    }
+                }
+        ));
         t.setCycleCount(Animation.INDEFINITE);
         t.play();
     }
@@ -112,18 +137,18 @@ public class FTM {
         if (Platform.isFxApplicationThread()) {
             offThread(() -> expandTransaction(tx));
         } else {
-            gv.addTransaction(tx);
-            tx.getInputs().forEach(coin -> {
-                gv.addTransaction(coin.getSourceTX());
-                gv.addCoin(coin);
-            });
-            tx.getOutputs().forEach(coin -> {
-                if (coin.getTargetTX() != null) {
-                    gv.addTransaction(coin.getTargetTX());
-                    gv.addCoin(coin);
-                }
-            });
+            expandInputs(tx);
+            expandOutputs(tx);
         }
+    }
+
+    private void expandOutputs(TXInfo tx) {
+        //todo check flag to visualize unspent outputs
+        tx.getOutputs().forEach(gv::addCoin);
+    }
+
+    private void expandInputs(TXInfo tx) {
+        tx.getInputs().forEach(gv::addCoin);
     }
 
     private void expandAddress(AddressInfo ai) {
@@ -140,7 +165,7 @@ public class FTM {
         gv.layout();
         gv.rebuildGraph();
     }
-    
+
     @FXML
     public void onCenter(ActionEvent event) {
         System.out.println("Center");
@@ -167,7 +192,7 @@ public class FTM {
         Duration time = sidebarTimeline.getCurrentTime();
         sidebarTimeline.stop();
         sidebarTimeline.playFrom(time);
-        
+
     }
 
     @FXML
@@ -186,13 +211,13 @@ public class FTM {
         paneLogin.setVisible(false);
     }
 
-    
+
     public void updateCoinbaseData() {
         String un = coinBaseAPI.getUserName();
-        
+
         List<CBAddress> addresses = coinBaseAPI.getAddresses();
         List<CBTransaction> transactions = coinBaseAPI.getTransactions();
-        
+
         // scrub in-coinbase transaction since they supply no blockchain hash
         transactions.removeIf(trans -> (trans.getHash() == null));
 
@@ -212,7 +237,7 @@ public class FTM {
             toggleSidebar.setSelected(true);
         });
     }
-    
+
     public void expandObject(JsonBase jbo) {
         if (Platform.isFxApplicationThread()) {
             offThread(() -> expandObject(jbo));
@@ -220,38 +245,139 @@ public class FTM {
             // thunk out coinbase to blockchain
             JsonBase jb = jbo;
             if (jb instanceof CBAddress) {
-               jb = AddressInfo.query(((CBAddress)jb).getAddress()); 
+                jb = AddressInfo.query(((CBAddress) jb).getAddress());
             } else if (jb instanceof CBTransaction) {
-                jb = TXInfo.query(((CBTransaction)jb).getHash());
+                jb = TXInfo.query(((CBTransaction) jb).getHash());
             }
-            
+
             // expand blockchain 
             if (jb instanceof AddressInfo) {
-                expandAddress((AddressInfo)jb);
+                expandAddress((AddressInfo) jb);
             } else if (jb instanceof TXInfo) {
-                expandTransaction((TXInfo)jb);
+                expandTransaction((TXInfo) jb);
             } else if (jb instanceof BlockInfo) {
-                expandBlock((BlockInfo)jb);
+                expandBlock((BlockInfo) jb);
+            } else if (jb instanceof CoinInfo) {
+                gv.addCoin((CoinInfo) jb);
             } else {
                 System.out.println("playSound(StandardSounds.SAD_TROMBONE)");
             }
         }
     }
 
-    private void updateHilights() {
+    private void updateHighlights() {
     }
-    
-    
+
+    private void expandSelected(ActionEvent event) {
+        offThread(() -> {
+            expandObject(menuSelectedItem.get());
+            graphNeedsUpdating();
+        });
+    }
+
+    private void expandOutputs(ActionEvent event) {
+        offThread(() -> {
+            expandOutputs((TXInfo) menuSelectedItem.get());
+            graphNeedsUpdating();
+        });
+    }
+
+    private void expandAllOutputs(ActionEvent event) {
+        offThread(() -> {
+            for (TXInfo tx : gv.findUnexpandedOutputTX((TXInfo) menuSelectedItem.get())) {
+                expandOutputs(tx);
+            }
+            graphNeedsUpdating();
+        });
+    }
+
+    private void expandInputs(ActionEvent event) {
+        offThread(() -> {
+            Object o = menuSelectedItem.get();
+            if (o instanceof CoinInfo) {
+                gv.addCoin((CoinInfo) o);
+            } else if (o instanceof TXInfo) {
+                expandInputs((TXInfo) o);
+            }
+            graphNeedsUpdating();
+        });
+    }
+
+    private void expandAllInputs(ActionEvent event) {
+        offThread(() -> {
+            Object o = menuSelectedItem.get();
+            System.out.println (o);
+            System.out.println (o.getClass());
+            if (o instanceof CoinInfo) {
+                gv.addCoin((CoinInfo)o);
+                o = ((CoinInfo)o).getSourceTX();
+                System.out.println (o);
+                System.out.println (o.getClass());
+            }
+            if (o instanceof TXInfo) {
+                for (TXInfo tx : gv.findUnexpandedInputTX((TXInfo) o)) {
+                    expandInputs(tx);
+                }
+            }
+            graphNeedsUpdating();
+        });
+    }
+
+    private void removeSelected(ActionEvent event) {
+        offThread(() -> {
+            Object o = menuSelectedItem.get();
+            if (o instanceof CoinInfo) {
+                gv.removeCoinAsNode((CoinInfo) o);
+            } else if (o instanceof TXInfo) {
+                gv.removeTX((TXInfo) o);
+            }
+            graphNeedsUpdating();
+        });
+    }
+
+
     @FXML
     void initialize() {
         try {
+            miExpand.setOnAction(this::expandSelected);
+            miExpandOutputs.setOnAction(this::expandOutputs);
+            miExpandAllOutputs.setOnAction(this::expandAllOutputs);
+            miExpandInputs.setOnAction(this::expandInputs);
+            miExpandAllInputs.setOnAction(this::expandAllInputs);
+            miRemoveTX.setOnAction(this::removeSelected);
+
+            menuSelectedItem.addListener((obv, newN, oldN) -> {
+                if (oldN instanceof TXInfo) {
+                    miExpand.setDisable(false); // TODO check expanded
+                    miExpandOutputs.setDisable(false); // TODO check expanded
+                    miExpandAllOutputs.setDisable(false);
+                    miExpandInputs.setDisable(false); // TODO check expanded
+                    miExpandAllInputs.setDisable(false);
+                    miRemoveTX.setDisable(false);
+                } else if (oldN instanceof CoinInfo) {
+                    miExpand.setDisable(false); // TODO check expanded
+                    miExpandOutputs.setDisable(true); 
+                    miExpandAllOutputs.setDisable(true);
+                    miExpandInputs.setDisable(true); 
+                    miExpandAllInputs.setDisable(false);
+                    miRemoveTX.setDisable(false);
+                } else {
+                    miExpand.setDisable(true);
+                    miExpandOutputs.setDisable(true);
+                    miExpandAllOutputs.setDisable(true);
+                    miExpandInputs.setDisable(true);
+                    miExpandAllInputs.setDisable(true);
+                    miRemoveTX.setDisable(true);
+                }
+            });
+
             progressIndicator.visibleProperty().bind(not(isEmpty(futures)));
-            
+
             //noinspection unchecked
             treeRoot.getChildren().setAll(coinbaseTreeLabel, FamousEntries.createFamousTree());
             //noinspection unchecked
             coinbaseTreeLabel.getChildren().setAll(coinbaseAddresses, coinbaseTransactions);
-            
+
             treeViewEntries.setRoot(treeRoot);
 
             treeViewEntries.setCellFactory(list -> new CoinbaseDataCell(jd -> {
@@ -259,19 +385,22 @@ public class FTM {
                 graphNeedsUpdating();
             }));
             treeViewEntries.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-            treeViewEntries.getSelectionModel().getSelectedItems().addListener((InvalidationListener) event -> updateHilights());
-            
+            treeViewEntries.getSelectionModel().getSelectedItems().addListener((InvalidationListener) event -> updateHighlights());
+
             gv = new GraphViewMXGraph((event, tx) -> {
-                if (event.getClickCount() == 2) {
-                    expandTransaction(tx);
+                if (event.isPopupTrigger() || (event.getButton() == MouseButton.SECONDARY && event.getClickCount() == 1)) {
+                    menuSelectedItem.setValue(tx);
+                    nodeContextMenu.show(event.getPickResult().getIntersectedNode(), event.getScreenX(), event.getScreenY());
+                } else if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2 && tx instanceof TXInfo) {
+                    expandTransaction((TXInfo) tx);
                     graphNeedsUpdating();
                 }
             });
             ZoomPane zp = new ZoomPane(gv.getGraphPane());
             mapPane.getChildren().setAll(zp);
-            
+
             coinBaseAuth = new CoinBaseOAuth(webViewLogin);
-            
+
             //can't bind because we want a weak push
             coinBaseAuth.visualAuthInProgressProperty().addListener((obv, o, n) -> paneLogin.setVisible(n));
 
@@ -280,21 +409,21 @@ public class FTM {
 
             buttonLogout.visibleProperty().bind(Bindings.isNotNull(coinBaseAuth.accessTokenProperty()));
             buttonLogin.visibleProperty().bind(Bindings.isNull(coinBaseAuth.accessTokenProperty()));
-    
+
             sidebarTimeline = new Timeline(
                     new KeyFrame(Duration.ZERO,
-                              new KeyValue(boxSide.translateXProperty(), 0, Interpolator.EASE_BOTH),
-                              new KeyValue(boxHeader.translateXProperty(), 0, Interpolator.EASE_BOTH)),        
+                            new KeyValue(boxSide.translateXProperty(), 0, Interpolator.EASE_BOTH),
+                            new KeyValue(boxHeader.translateXProperty(), 0, Interpolator.EASE_BOTH)),
                     new KeyFrame(slideTime,
-                              new KeyValue(boxSide.translateXProperty(), 250, Interpolator.EASE_BOTH),
-                              new KeyValue(boxHeader.translateXProperty(), 250, Interpolator.EASE_BOTH))        
-                );
+                            new KeyValue(boxSide.translateXProperty(), 250, Interpolator.EASE_BOTH),
+                            new KeyValue(boxHeader.translateXProperty(), 250, Interpolator.EASE_BOTH))
+            );
             sidebarTimeline.setAutoReverse(false);
 
             coinBaseAPI = new CoinBaseAPI(coinBaseAuth, false, false);
             coinBaseAuth.accessTokenProperty().addListener(change -> offThread(this::updateCoinbaseData));
             offThread(() -> coinBaseAuth.checkTokens(true, false));
-            
+
         } catch (Exception e) {
             e.printStackTrace(System.out);
         }

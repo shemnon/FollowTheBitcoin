@@ -11,3 +11,17 @@
  -fx-border-color: black;
  -fx-border-width: 1px;
 }
+
+.coin {
+ -fx-background-color: #009900;
+ -fx-border-color: #00990088;
+ -fx-border-width: 1px;
+ -fx-border-radius: 20px;
+ -fx-background-radius: 20px;
+ -fx-padding: 4px
+}
+
+.coin:hover {
+ -fx-border-color: black;
+ -fx-border-width: 1px;
+}

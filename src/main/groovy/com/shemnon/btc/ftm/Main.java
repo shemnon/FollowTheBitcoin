@@ -14,7 +14,7 @@ public class Main extends Application {
     
     @Override
     public void start(Stage primaryStage) throws Exception {
-        primaryStage.setTitle("Follow the \u0e3fitcoins");
+        primaryStage.setTitle("Where's My \u0e3fitcoin?");
         
         FXMLLoader loader = new FXMLLoader(Main.class.getResource("/com/shemnon/btc/ftm/FTM.fxml"));
         loader.load();
