@@ -1,5 +1,7 @@
 package com.shemnon.btc.view;
 
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.input.MouseEvent;
@@ -20,6 +22,10 @@ public class ZoomPane extends Pane {
     Affine workTransform;
     Node zoomNode;
     
+    
+    DoubleProperty scale = new SimpleDoubleProperty(1.0);
+    DoubleProperty tx = new SimpleDoubleProperty(0.0);
+    DoubleProperty ty = new SimpleDoubleProperty(0.0);
     
     boolean set = false;
     double lastScale = 1.0;
@@ -48,25 +54,48 @@ public class ZoomPane extends Pane {
         setOnScroll(this::scrolling);
         setOnMouseDragged(this::dragging);
     }
+
+    void start(double x, double y) {
+        lastScale = scale.get();
+        lastTX = tx.get();
+        lastTY = ty.get();
+        lastX = x;
+        lastY = y;
+        set = true;
+    }
+
+    void finish() {
+        set = false;
+    }
+
+    protected void writeToTransform() {
+        transform.setToTransform(
+                scale.get(), 0, tx.get(),
+                0, scale.get(), ty.get());
+    }
     
     public void zooming(ZoomEvent ze) { 
         zoom(ze.getTotalZoomFactor(), ze.getX(), ze.getY());
     }
 
     private void zoom(double zoomFactor, double x, double y) {
+        if (!set) start(x, y);
         workTransform.setMxx(lastScale);
         workTransform.setMyy(lastScale);
         workTransform.setTx(lastTX);
         workTransform.setTy(lastTY);
         
-        workTransform.appendScale(zoomFactor, zoomFactor, x, y);
+        workTransform.prependScale(zoomFactor, zoomFactor, x, y);
         
-        transform.setToTransform(
-                workTransform.getMxx(), workTransform.getMxy(), workTransform.getTx(),
-                workTransform.getMyx(), workTransform.getMyy(), workTransform.getTy());
+        scale.set(workTransform.getMxx());
+        tx.set(workTransform.getTx());
+        ty.set(workTransform.getTy());
+        
+        writeToTransform();
     }
 
     public void scrolling(ScrollEvent se) {
+        if (!set) start(se.getX(), se.getY());
         // get a click count...
         double currentZoom = transform.getMxx();
         if (se.getDeltaY() > 0) {
@@ -76,27 +105,18 @@ public class ZoomPane extends Pane {
         }
     }
 
-    public void start(double x, double y) {
-        lastScale = transform.getMxx();
-        lastTX = transform.getTx();
-        lastTY = transform.getTy();
-        lastX = x;
-        lastY = y;
-        set = true;
-    }
 
-    public void finish() {
-        set = false;
-    }
-
-    public void dragging(MouseEvent me) {        
+    public void dragging(MouseEvent me) {
+        if (!set) start(me.getX(), me.getY());
         if (!Double.isNaN(lastX) && !Double.isNaN(lastY)) {
             double dx = me.getX() - lastX; 
             double dy = me.getY() - lastY; 
-            transform.appendTranslation(dx, dy);
+            tx.set(tx.get() + dx);
+            ty.set(ty.get() + dy);
         }
         lastX = me.getX();
         lastY = me.getY();
+        writeToTransform();
     }
     
 }
