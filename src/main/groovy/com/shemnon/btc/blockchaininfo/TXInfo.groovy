@@ -128,7 +128,8 @@ public class TXInfo extends JsonBase {
     }
     
     public List<CoinInfo> getUnspentCoins() {
-        return outputs.findAll {c -> c.getTargetTX() == null}
+        return outputs.findAll {c -> 
+            (c.getJsonSeed().containsKey('spent') && c.getJsonSeed().spent == false) || c.getTargetTX() == null}
     }
     
     public long getTimeMs() {

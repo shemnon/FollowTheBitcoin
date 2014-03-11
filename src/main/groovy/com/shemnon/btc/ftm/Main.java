@@ -12,6 +12,10 @@ import javafx.stage.Stage;
  */
 public class Main extends Application {
     
+    public static void main(String... args) {
+        Application.launch(Main.class, args);
+    }
+    
     @Override
     public void start(Stage primaryStage) throws Exception {
         primaryStage.setTitle("Where's My \u0e3fitcoin?");

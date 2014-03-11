@@ -16,6 +16,7 @@ import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.WritableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -24,7 +25,6 @@ import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.web.WebView;
 import javafx.util.Duration;
@@ -51,7 +51,7 @@ public class FTM {
     @FXML ChoiceBox<String> choiceType;
     @FXML HBox loginPane;
     @FXML Label labelProgressBacklog;
-    @FXML Pane mapPane;
+    @FXML AnchorPane mapPane;
     @FXML AnchorPane paneLogin;
     @FXML ProgressIndicator progressIndicator;
     @FXML TextField textSearch;
@@ -88,6 +88,7 @@ public class FTM {
             miRemoveTX
     );
     private GraphViewMXGraph gv;
+    private ZoomPane zp;
 
     public void offThread(Runnable r) {
         Future<?> f = offThreadExecutor.submit(r);
@@ -108,21 +109,32 @@ public class FTM {
 
     @FXML
     public void newHash(ActionEvent event) {
-        switch (choiceType.getValue()) {
-            case "Transaction":
-                TXInfo tx = TXInfo.query(textSearch.getText());
-                expandTransaction(tx);
-                break;
-            case "Address":
-                AddressInfo ai = AddressInfo.query(textSearch.getText());
-                expandAddress(ai);
-                break;
-            case "Block":
-                BlockInfo bi = BlockInfo.query(textSearch.getText());
-                expandBlock(bi);
-                break;
-        }
-        graphNeedsUpdating();
+        String type = choiceType.getValue();
+        String hash = textSearch.getText();
+        offThread(() -> {
+            JsonBase jd;
+            switch (type) {
+                case "Transaction":
+                    jd = TXInfo.query(hash);
+                    break;
+                case "Address":
+                    jd = AddressInfo.query(hash);
+                    break;
+                case "Block":
+                    jd = BlockInfo.query(hash);
+                    break;
+                default:
+                    return;
+            }
+            JsonBase jb = jd;
+            expandObject(jb);
+            Platform.runLater(() -> {
+                gv.layout();
+                gv.rebuildGraph();
+                zp.layout();
+                zp.centerOnNode(gv.getNode(jb));
+            });
+        });
     }
 
     private void expandBlock(BlockInfo bi) {
@@ -168,7 +180,17 @@ public class FTM {
 
     @FXML
     public void onCenter(ActionEvent event) {
-        System.out.println("Center");
+        zp.center();
+    }
+
+    @FXML
+    public void onZoomToFit(ActionEvent event) {
+        zp.fit();
+    }
+
+    @FXML
+    public void onDeZoom(ActionEvent event) {
+        zp.zoomOneToOne();
     }
 
     @FXML
@@ -382,7 +404,12 @@ public class FTM {
 
             treeViewEntries.setCellFactory(list -> new CoinbaseDataCell(jd -> {
                 expandObject(jd);
-                graphNeedsUpdating();
+                offThread(() -> Platform.runLater(() -> {
+                    gv.layout();
+                    gv.rebuildGraph();
+                    zp.layout();
+                    zp.centerOnNode(gv.getNode(jd));
+                }));
             }));
             treeViewEntries.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
             treeViewEntries.getSelectionModel().getSelectedItems().addListener((InvalidationListener) event -> updateHighlights());
@@ -396,8 +423,12 @@ public class FTM {
                     graphNeedsUpdating();
                 }
             });
-            ZoomPane zp = new ZoomPane(gv.getGraphPane());
+            zp = new ZoomPane(gv.getGraphPane());
             mapPane.getChildren().setAll(zp);
+            AnchorPane.setTopAnchor(zp, 0.0);
+            AnchorPane.setRightAnchor(zp, 0.0);
+            AnchorPane.setBottomAnchor(zp, 0.0);
+            AnchorPane.setLeftAnchor(zp, 0.0);
 
             coinBaseAuth = new CoinBaseOAuth(webViewLogin);
 
@@ -410,13 +441,25 @@ public class FTM {
             buttonLogout.visibleProperty().bind(Bindings.isNotNull(coinBaseAuth.accessTokenProperty()));
             buttonLogin.visibleProperty().bind(Bindings.isNull(coinBaseAuth.accessTokenProperty()));
 
+            WritableValue<Number> leftOffset = new WritableValue<Number>() {
+                @Override
+                public Number getValue() {
+                    return AnchorPane.getLeftAnchor(boxHeader);
+                }
+
+                @Override
+                public void setValue(Number value) {
+                    AnchorPane.setLeftAnchor(boxHeader, value.doubleValue());
+                }
+            };
+            
             sidebarTimeline = new Timeline(
                     new KeyFrame(Duration.ZERO,
                             new KeyValue(boxSide.translateXProperty(), 0, Interpolator.EASE_BOTH),
-                            new KeyValue(boxHeader.translateXProperty(), 0, Interpolator.EASE_BOTH)),
+                            new KeyValue(leftOffset, 0, Interpolator.EASE_BOTH)),
                     new KeyFrame(slideTime,
                             new KeyValue(boxSide.translateXProperty(), 250, Interpolator.EASE_BOTH),
-                            new KeyValue(boxHeader.translateXProperty(), 250, Interpolator.EASE_BOTH))
+                            new KeyValue(leftOffset, 250, Interpolator.EASE_BOTH))
             );
             sidebarTimeline.setAutoReverse(false);
 

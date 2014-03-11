@@ -154,13 +154,14 @@ public class CoinBaseOAuth {
         if (refreshToken == null) {
             return false;
         }
+        String postContent = "";
         try {
             URL tokenURL = new URL("https://coinbase.com/oauth/token");
 
             HttpURLConnection uc = (HttpURLConnection) tokenURL.openConnection();
             uc.setRequestMethod("POST");
             uc.setDoOutput(true);
-            String postContent = "grant_type=refresh_token" +
+            postContent = "grant_type=refresh_token" +
                     "&refresh_token=" + refreshToken +
                     "&redirect_uri=" + CALLBACK_URL +
                     "&client_id=" + COINBASE_CLIENT_ID +
@@ -180,6 +181,7 @@ public class CoinBaseOAuth {
             Platform.runLater(() -> accessToken.setValue((String) m.get("access_token")));
             return true;
         } catch (IOException e) {
+            System.out.println(postContent);
             e.printStackTrace();
         }
 

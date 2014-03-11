@@ -7,6 +7,10 @@
  -fx-padding: 4px
 }
 
+.tx.expanded {
+ -fx-background-color: #ffde00;
+}
+
 .tx:hover {
  -fx-border-color: black;
  -fx-border-width: 1px;
