@@ -57,7 +57,7 @@ public class TestGraphViewMXGraph {
             gv.layout();
     
             Pane pane = gv.getGraphPane();
-            gv.rebuildGraph();
+            gv.rebuildGraph(false);
             
             pane.setScaleX(0.5);
             pane.setScaleY(0.5);

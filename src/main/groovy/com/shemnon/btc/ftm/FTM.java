@@ -142,7 +142,7 @@ public class FTM {
             expandObject(jb);
             Platform.runLater(() -> {
                 gv.layout();
-                gv.rebuildGraph();
+                gv.rebuildGraph(true);
                 zp.layout();
                 zp.centerOnNode(gv.getNode(jb));
             });
@@ -187,7 +187,7 @@ public class FTM {
     public void onReset(ActionEvent event) {
         gv.reset();
         gv.layout();
-        gv.rebuildGraph();
+        gv.rebuildGraph(false);
     }
 
     @FXML
@@ -331,14 +331,14 @@ public class FTM {
     private void expandSelected(ActionEvent event) {
         offThread(() -> {
             expandObject(menuSelectedItem.get());
-            graphNeedsUpdating();
+            graphNeedsUpdating(true);
         });
     }
 
     private void expandOutputs(ActionEvent event) {
         offThread(() -> {
             expandOutputs((TXInfo) menuSelectedItem.get());
-            graphNeedsUpdating();
+            graphNeedsUpdating(true);
         });
     }
 
@@ -347,7 +347,7 @@ public class FTM {
             for (TXInfo tx : gv.findUnexpandedOutputTX((TXInfo) menuSelectedItem.get())) {
                 expandOutputs(tx);
             }
-            graphNeedsUpdating();
+            graphNeedsUpdating(true);
         });
     }
 
@@ -359,27 +359,23 @@ public class FTM {
             } else if (o instanceof TXInfo) {
                 expandInputs((TXInfo) o);
             }
-            graphNeedsUpdating();
+            graphNeedsUpdating(true);
         });
     }
 
     private void expandAllInputs(ActionEvent event) {
         offThread(() -> {
             Object o = menuSelectedItem.get();
-            System.out.println (o);
-            System.out.println (o.getClass());
             if (o instanceof CoinInfo) {
                 gv.addCoin((CoinInfo)o);
                 o = ((CoinInfo)o).getSourceTX();
-                System.out.println (o);
-                System.out.println (o.getClass());
             }
             if (o instanceof TXInfo) {
                 for (TXInfo tx : gv.findUnexpandedInputTX((TXInfo) o)) {
                     expandInputs(tx);
                 }
             }
-            graphNeedsUpdating();
+            graphNeedsUpdating(true);
         });
     }
 
@@ -391,7 +387,7 @@ public class FTM {
             } else if (o instanceof TXInfo) {
                 gv.removeTX((TXInfo) o);
             }
-            graphNeedsUpdating();
+            graphNeedsUpdating(true);
         });
     }
 
@@ -444,7 +440,7 @@ public class FTM {
                 expandObject(jd);
                 offThread(() -> Platform.runLater(() -> {
                     gv.layout();
-                    gv.rebuildGraph();
+                    gv.rebuildGraph(true);
                     zp.layout();
                     zp.centerOnNode(gv.getNode(jd));
                 }));
@@ -458,7 +454,7 @@ public class FTM {
                     nodeContextMenu.show(event.getPickResult().getIntersectedNode(), event.getScreenX(), event.getScreenY());
                 } else if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2 && tx instanceof TXInfo) {
                     expandTransaction((TXInfo) tx);
-                    graphNeedsUpdating();
+                    graphNeedsUpdating(true);
                 }
             });
             zp = new ZoomPane(gv.getGraphPane());
@@ -537,7 +533,7 @@ public class FTM {
                     bp.addListener((obv, o, n) -> {
                         gv.resizeGraphNodes();
                         gv.layout();
-                        gv.rebuildGraph();
+                        gv.rebuildGraph(false);
                     })
             );
 
@@ -551,10 +547,10 @@ public class FTM {
         }
     }
 
-    private void graphNeedsUpdating() {
+    private void graphNeedsUpdating(boolean animate) {
         offThread(() -> Platform.runLater(() -> {
             gv.layout();
-            gv.rebuildGraph();
+            gv.rebuildGraph(animate);
         }));
     }
 }

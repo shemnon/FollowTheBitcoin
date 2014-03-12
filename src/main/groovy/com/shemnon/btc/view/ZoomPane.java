@@ -185,9 +185,6 @@ public class ZoomPane extends Pane {
             Bounds tb = getLayoutBounds();
             tx.set((tb.getWidth() - (b.getMinX() + b.getMaxX())*scale.get()) / 2);
             ty.set((tb.getHeight() - (b.getMinY() + b.getMaxY())*scale.get()) / 2);
-            System.out.println(tb);
-            System.out.println(b);
-            System.out.println(tx.get() + "," + ty.get());
             writeToTransform();
         }
     }
