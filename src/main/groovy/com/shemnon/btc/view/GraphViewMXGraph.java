@@ -14,6 +14,8 @@ import com.shemnon.btc.coinbase.CBTransaction;
 import com.shemnon.btc.ftm.JsonBase;
 import com.shemnon.btc.blockchaininfo.CoinInfo;
 import com.shemnon.btc.blockchaininfo.TXInfo;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.Node;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
@@ -47,10 +49,22 @@ public class GraphViewMXGraph {
 
     Map<String, Object> keyToVertexCell = new ConcurrentHashMap<>();
     Map<String, Object> keyToEdgeCell = new ConcurrentHashMap<>();
-    Map<String, Node> keyToVertexNode = new ConcurrentHashMap<>();
+    Map<String, Pane> keyToVertexNode = new ConcurrentHashMap<>();
     //Map<String, Node> keyToEdgeNode = new ConcurrentHashMap<>();
 
     Pane graphPane;
+    
+    BooleanProperty showTxHash = new SimpleBooleanProperty(true);
+    BooleanProperty showTxBitcoin = new SimpleBooleanProperty(true);
+    BooleanProperty showTxUSD = new SimpleBooleanProperty(true);
+    BooleanProperty showTxDate = new SimpleBooleanProperty(true);
+    BooleanProperty showTxHeight = new SimpleBooleanProperty(true);
+    BooleanProperty showTxCoinCount = new SimpleBooleanProperty(true);
+    
+    BooleanProperty showCoinNodeHash = new SimpleBooleanProperty(true);
+    BooleanProperty showCoinNodeBitcoin = new SimpleBooleanProperty(true);
+    BooleanProperty showCoinNodeUSD = new SimpleBooleanProperty(true);
+    
 
     public GraphViewMXGraph(BiConsumer<MouseEvent, JsonBase> clickHandler) {
         this.clickHandler = clickHandler;
@@ -144,6 +158,23 @@ public class GraphViewMXGraph {
         }
     }
 
+    public void resizeGraphNodes() {
+        for (Map.Entry<String, Object> e : keyToVertexCell.entrySet()) {
+            if (e.getValue() instanceof mxCell) {
+                String key = e.getKey();
+                if (key.contains("#")) {
+                    recreateUnspentOutput(CoinInfo.query(key));
+                } else {
+                    recreateTXNode(TXInfo.query(key));
+                }
+                
+                Pane p = keyToVertexNode.get(e.getKey());
+                ((mxCell) e.getValue()).getGeometry().setWidth(p.getWidth());
+                ((mxCell) e.getValue()).getGeometry().setHeight(p.getHeight());
+            }
+        }
+    }
+    
     public void layout() {
         mxGraphLayout.execute(mxGraph.getDefaultParent());
     }
@@ -213,17 +244,16 @@ public class GraphViewMXGraph {
         rebuildGraph();
     }
     
-    Node createUnspentOutput(CoinInfo coin) {
+    Pane createUnspentOutput(CoinInfo coin) {
         if (keyToVertexCell.containsKey(coin.getCompkey())) {
             return keyToVertexNode.get(coin.getCompkey());
         } else {
-            Text btc = new Text(btcFormat.format(coin.getValue()));
-            Text address = new Text(JsonBase.shortHash(coin.getAddr()));
-            
-            VBox box = new VBox(btc, address);
+            VBox box = new VBox();
             box.getStyleClass().add("coin");
 
             box.setOnMouseClicked(event -> clickHandler.accept(event, coin));
+
+            fillUnspentOutput(coin, box);
            
             keyToVertexNode.put(coin.getCompkey(), box);
             updateExpanded(coin.getSourceTX());
@@ -232,31 +262,78 @@ public class GraphViewMXGraph {
         }
     }
 
-    Node createTXNode(TXInfo tx) {
+    Pane recreateUnspentOutput(CoinInfo ci) {
+        if (keyToVertexNode.containsKey(ci.getCompkey())) {
+            Pane p = keyToVertexNode.get(ci.getCompkey());
+            p.getChildren().clear();
+            fillUnspentOutput(ci, p);
+            return p;
+        } else {
+            return createUnspentOutput(ci);
+        }
+    }
+
+    private void fillUnspentOutput(CoinInfo coin, Pane box) {
+        if (showCoinNodeHash.get()) {
+            box.getChildren().add(new Text(btcFormat.format(coin.getValue())));
+        }
+        if (showCoinNodeBitcoin.get()) {
+            box.getChildren().add(new Text(JsonBase.shortHash(coin.getAddr())));
+        }
+        box.autosize();
+    }
+
+    Pane recreateTXNode(TXInfo tx) {
+        if (keyToVertexNode.containsKey(tx.getHash())) {
+            Pane p = keyToVertexNode.get(tx.getHash());
+            p.getChildren().clear();
+            fillTXNode(tx, p);
+            return p;
+        } else {
+            return createTXNode(tx);
+        }
+    }
+
+    Pane createTXNode(TXInfo tx) {
         if (keyToVertexNode.containsKey(tx.getHash())) {
             return keyToVertexNode.get(tx.getHash());
         } else {
-            Text hash = new Text(JsonBase.shortHash(tx.getHash()));
-            Text btc = new Text(btcFormat.format(tx.getInputValue()));
-            Text date = new Text(tx.getTimeString());
-            Text index = new Text("Block# " + tx.getBlockHeight());
-            
-            Text coins = new Text(tx.getInputs().size() + " in " + tx.getOutputs().size() + " out " + tx.getUnspentCoins().size() + " unspent");
-
-            VBox box = new VBox(hash, btc, date, index, coins);
+            VBox box = new VBox();
             box.getStyleClass().setAll("tx");
-            
+
             box.setOnMouseClicked(event -> clickHandler.accept(event, tx));
-            
+
+            fillTXNode(tx, box);
+
             // This eliminates jiggly text at non 1.0 scale
-//            box.setCache(true);
-//            box.setCacheHint(CacheHint.QUALITY);
+            //box.setCache(true);
+            //box.setCacheHint(CacheHint.QUALITY);
             
             keyToVertexNode.put(tx.getHash(), box);
             updateExpanded(tx);
             
             return box;
         }
+    }
+
+    private void fillTXNode(TXInfo tx, Pane box) {
+        if (showTxHash.get()) {
+            box.getChildren().add(new Text(JsonBase.shortHash(tx.getHash())));
+        }
+        if (showTxBitcoin.get()) {
+            box.getChildren().add(new Text(btcFormat.format(tx.getInputValue())));
+        }
+        //todo usd
+        if (showTxDate.get()) {
+            box.getChildren().add(new Text(tx.getTimeString()));
+        }
+        if (showTxHeight.get()) {
+            box.getChildren().add(new Text("Block# " + tx.getBlockHeight()));
+        }
+        if (showTxCoinCount.get()) {
+            box.getChildren().add(new Text(tx.getInputs().size() + " in " + tx.getOutputs().size() + " out " + tx.getUnspentCoins().size() + " unspent"));
+        }
+        box.autosize();
     }
 
     public void reset() {
@@ -354,4 +431,125 @@ public class GraphViewMXGraph {
         }
     }
 
+    public boolean getShowTxHash() {
+        return showTxHash.get();
+    }
+
+    public BooleanProperty showTxHashProperty() {
+        return showTxHash;
+    }
+
+    public void setShowTxHash(boolean showTxHash) {
+        this.showTxHash.set(showTxHash);
+    }
+
+    public boolean getShowTxBitcoin() {
+        return showTxBitcoin.get();
+    }
+
+    public BooleanProperty showTxBitcoinProperty() {
+        return showTxBitcoin;
+    }
+
+    public void setShowTxBitcoin(boolean showTxBitcoin) {
+        this.showTxBitcoin.set(showTxBitcoin);
+    }
+
+    public boolean getShowTxUSD() {
+        return showTxUSD.get();
+    }
+
+    public BooleanProperty showTxUSDProperty() {
+        return showTxUSD;
+    }
+
+    public void setShowTxUSD(boolean showTxUSD) {
+        this.showTxUSD.set(showTxUSD);
+    }
+
+    public boolean getShowTxDate() {
+        return showTxDate.get();
+    }
+
+    public BooleanProperty showTxDateProperty() {
+        return showTxDate;
+    }
+
+    public void setShowTxDate(boolean showTxDate) {
+        this.showTxDate.set(showTxDate);
+    }
+
+    public boolean getShowTxHeight() {
+        return showTxHeight.get();
+    }
+
+    public BooleanProperty showTxHeightProperty() {
+        return showTxHeight;
+    }
+
+    public void setShowTxHeight(boolean showTxHeight) {
+        this.showTxHeight.set(showTxHeight);
+    }
+
+    public boolean getShowTxCoinCount() {
+        return showTxCoinCount.get();
+    }
+
+    public BooleanProperty showTxCoinCountProperty() {
+        return showTxCoinCount;
+    }
+
+    public void setShowTxCoinCount(boolean showTxCoinCount) {
+        this.showTxCoinCount.set(showTxCoinCount);
+    }
+
+    public boolean getShowCoinNodeHash() {
+        return showCoinNodeHash.get();
+    }
+
+    public BooleanProperty showCoinNodeHashProperty() {
+        return showCoinNodeHash;
+    }
+
+    public void setShowCoinNodeHash(boolean showCoinNodeHash) {
+        this.showCoinNodeHash.set(showCoinNodeHash);
+    }
+
+    public boolean getShowCoinNodeBitcoin() {
+        return showCoinNodeBitcoin.get();
+    }
+
+    public BooleanProperty showCoinNodeBitcoinProperty() {
+        return showCoinNodeBitcoin;
+    }
+
+    public void setShowCoinNodeBitcoin(boolean showCoinNodeBitcoin) {
+        this.showCoinNodeBitcoin.set(showCoinNodeBitcoin);
+    }
+
+    public boolean getShowCoinNodeUSD() {
+        return showCoinNodeUSD.get();
+    }
+
+    public BooleanProperty showCoinNodeUSDProperty() {
+        return showCoinNodeUSD;
+    }
+
+    public void setShowCoinNodeUSD(boolean showCoinNodeUSD) {
+        this.showCoinNodeUSD.set(showCoinNodeUSD);
+    }
+    
+    public List<BooleanProperty> layoutFlags() {
+        return Arrays.asList(
+                showTxHash,
+                showTxBitcoin,
+                showTxUSD,
+                showTxDate,
+                showTxHeight,
+                showTxCoinCount,
+                showCoinNodeHash,
+                showCoinNodeBitcoin,
+                showCoinNodeUSD
+        );
+    }
 }

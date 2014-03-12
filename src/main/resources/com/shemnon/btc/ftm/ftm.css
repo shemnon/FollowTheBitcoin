@@ -21,6 +21,10 @@
  -fx-background-color: linear-gradient(to right, #fffe 0%, #fffe 95%, #fff0 100%);
 }
 
+.rightSideFade {
+ -fx-background-color: linear-gradient(to left, #fffe 0%, #fffe 95%, #fff0 100%);
+}
+
 .slideButton {
     -fx-padding: 1px 2px 0px 2px;
     -fx-background-color: transparent;

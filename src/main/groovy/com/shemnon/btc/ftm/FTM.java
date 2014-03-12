@@ -45,9 +45,19 @@ import static javafx.beans.binding.Bindings.not;
 public class FTM {
 
     @FXML HBox boxHeader;
+    @FXML VBox boxRightSide;
     @FXML VBox boxSide;
     @FXML Button buttonLogin;
     @FXML Button buttonLogout;
+    @FXML CheckBox checkTxHash;
+    @FXML CheckBox checkTxBtc;
+    @FXML CheckBox checkTxUsd;
+    @FXML CheckBox checkTxDate;
+    @FXML CheckBox checkTxHeight;
+    @FXML CheckBox checkTxCoins;
+    @FXML CheckBox checkUnspentHash;
+    @FXML CheckBox checkUnspentBtc;
+    @FXML CheckBox checkUnspentUsd;
     @FXML ChoiceBox<String> choiceType;
     @FXML HBox loginPane;
     @FXML Label labelProgressBacklog;
@@ -55,6 +65,7 @@ public class FTM {
     @FXML AnchorPane paneLogin;
     @FXML ProgressIndicator progressIndicator;
     @FXML TextField textSearch;
+    @FXML ToggleButton toggleRightSidebar;
     @FXML ToggleButton toggleSidebar;
     @FXML TreeView<JsonBase> treeViewEntries;
     @FXML WebView webViewLogin;
@@ -67,6 +78,7 @@ public class FTM {
     CoinBaseAPI coinBaseAPI;
     Duration slideTime = Duration.millis(400);
     Timeline sidebarTimeline;
+    Timeline rightSidebarTimeline;
     ExecutorService offThreadExecutor = Executors.newSingleThreadExecutor();
     ObservableList<Future<?>> futures = FXCollections.observableArrayList();
     ObjectProperty<JsonBase> menuSelectedItem = new SimpleObjectProperty<>(null);
@@ -207,6 +219,8 @@ public class FTM {
         Duration time = sidebarTimeline.getCurrentTime();
         sidebarTimeline.stop();
         sidebarTimeline.playFrom(time);
+        hideRightSidebar();
+        toggleRightSidebar.setSelected(false);
     }
 
     private void hideSidebar() {
@@ -214,7 +228,31 @@ public class FTM {
         Duration time = sidebarTimeline.getCurrentTime();
         sidebarTimeline.stop();
         sidebarTimeline.playFrom(time);
+    }
 
+    @FXML
+    public void toggleRightSidebar(ActionEvent event) {
+        if (toggleRightSidebar.isSelected()) {
+            showRightSidebar();
+        } else {
+            hideRightSidebar();
+        }
+    }
+
+    private void showRightSidebar() {
+        rightSidebarTimeline.setRate(1);
+        Duration time = rightSidebarTimeline.getCurrentTime();
+        rightSidebarTimeline.stop();
+        rightSidebarTimeline.playFrom(time);
+        hideSidebar();
+        toggleSidebar.setSelected(false);
+    }
+
+    private void hideRightSidebar() {
+        rightSidebarTimeline.setRate(-1);
+        Duration time = rightSidebarTimeline.getCurrentTime();
+        rightSidebarTimeline.stop();
+        rightSidebarTimeline.playFrom(time);
     }
 
     @FXML
@@ -453,6 +491,18 @@ public class FTM {
                 }
             };
             
+            WritableValue<Number> rightOffset = new WritableValue<Number>() {
+                @Override
+                public Number getValue() {
+                    return AnchorPane.getRightAnchor(boxHeader);
+                }
+
+                @Override
+                public void setValue(Number value) {
+                    AnchorPane.setRightAnchor(boxHeader, value.doubleValue());
+                }
+            };
+            
             sidebarTimeline = new Timeline(
                     new KeyFrame(Duration.ZERO,
                             new KeyValue(boxSide.translateXProperty(), 0, Interpolator.EASE_BOTH),
@@ -463,6 +513,35 @@ public class FTM {
             );
             sidebarTimeline.setAutoReverse(false);
 
+            rightSidebarTimeline = new Timeline(
+                    new KeyFrame(Duration.ZERO,
+                            new KeyValue(boxRightSide.translateXProperty(), 0, Interpolator.EASE_BOTH),
+                            new KeyValue(rightOffset, 0, Interpolator.EASE_BOTH)),
+                    new KeyFrame(slideTime,
+                            new KeyValue(boxRightSide.translateXProperty(), -250, Interpolator.EASE_BOTH),
+                            new KeyValue(rightOffset, 250, Interpolator.EASE_BOTH))
+            );
+            rightSidebarTimeline.setAutoReverse(false);
+
+            gv.showTxHashProperty().bindBidirectional(checkTxHash.selectedProperty());
+            gv.showTxBitcoinProperty().bindBidirectional(checkTxBtc.selectedProperty());
+            gv.showTxUSDProperty().bindBidirectional(checkTxUsd.selectedProperty());
+            gv.showTxDateProperty().bindBidirectional(checkTxDate.selectedProperty());
+            gv.showTxHeightProperty().bindBidirectional(checkTxHeight.selectedProperty());
+            gv.showTxCoinCountProperty().bindBidirectional(checkTxCoins.selectedProperty());
+            gv.showCoinNodeHashProperty().bindBidirectional(checkUnspentHash.selectedProperty());
+            gv.showCoinNodeBitcoinProperty().bindBidirectional(checkUnspentBtc.selectedProperty());
+            gv.showCoinNodeHashProperty().bindBidirectional(checkUnspentUsd.selectedProperty());
+            
+            gv.layoutFlags().forEach(bp ->
+                    bp.addListener((obv, o, n) -> {
+                        gv.resizeGraphNodes();
+                        gv.layout();
+                        gv.rebuildGraph();
+                    })
+            );
+
+            
             coinBaseAPI = new CoinBaseAPI(coinBaseAuth, false, false);
             coinBaseAuth.accessTokenProperty().addListener(change -> offThread(this::updateCoinbaseData));
             offThread(() -> coinBaseAuth.checkTokens(true, false));

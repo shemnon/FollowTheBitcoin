@@ -1,27 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.collections.FXCollections?>
-<?import javafx.geometry.Insets?>
+<?import java.lang.*?>
+<?import javafx.collections.*?>
+<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.Font?>
-<?import javafx.scene.web.WebView?>
-<?import java.lang.String?>
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="650.0"
-            prefWidth="800.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.shemnon.btc.ftm.FTM">
+<?import javafx.scene.text.*?>
+<?import javafx.scene.web.*?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="650.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.shemnon.btc.ftm.FTM">
     <children>
-        <AnchorPane fx:id="mapPane" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0"
-                    AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"/>
-        <Pane prefHeight="60.0" styleClass="headerFade" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"/>
+        <AnchorPane fx:id="mapPane" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+        <Pane prefHeight="60.0" styleClass="headerFade" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
         <HBox fx:id="boxHeader" spacing="10.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
             <children>
-                <ToggleButton fx:id="toggleSidebar" focusTraversable="false" mnemonicParsing="false"
-                              onAction="#toggleSidebar" styleClass="slideButton">
+                <ToggleButton fx:id="toggleSidebar" focusTraversable="false" mnemonicParsing="false" onAction="#toggleSidebar" styleClass="slideButton">
                     <font>
-                        <Font name="System Bold" size="14.0"/>
+                        <Font name="System Bold" size="14.0" />
                     </font>
                     <graphic>
                         <ImageView>
@@ -34,70 +30,112 @@
                 <ChoiceBox fx:id="choiceType" minHeight="-Infinity" minWidth="-Infinity" prefWidth="110.0">
                     <items>
                         <FXCollections fx:factory="observableArrayList">
-                            <String fx:value="Address"/>
-                            <String fx:value="Transaction"/>
-                            <String fx:value="Block"/>
+                            <String fx:value="Address" />
+                            <String fx:value="Transaction" />
+                            <String fx:value="Block" />
                         </FXCollections>
                     </items>
                     <value>
-                        <String fx:value="Address"/>
+                        <String fx:value="Address" />
                     </value>
                 </ChoiceBox>
-                <TextField fx:id="textSearch" alignment="BASELINE_LEFT" maxHeight="26.0" maxWidth="400.0"
-                           onAction="#newHash" prefColumnCount="32" promptText="Hash" HBox.hgrow="SOMETIMES"/>
-                <Button minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#newHash"
-                        text="Add"/>
-                <Pane maxWidth="1.7976931348623157E308" prefHeight="0.0" prefWidth="0.0" HBox.hgrow="SOMETIMES"/>
+                <TextField fx:id="textSearch" alignment="BASELINE_LEFT" maxHeight="26.0" maxWidth="400.0" onAction="#newHash" prefColumnCount="32" promptText="Hash" HBox.hgrow="SOMETIMES" />
+                <Button minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#newHash" text="Add" />
+                <Pane maxWidth="1.7976931348623157E308" prefHeight="0.0" prefWidth="0.0" HBox.hgrow="SOMETIMES" />
                 <MenuButton minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" text="Graph">
                     <items>
-                        <MenuItem mnemonicParsing="false" text="Clear Graph" onAction="#onReset"/>
-                        <SeparatorMenuItem mnemonicParsing="false"/>
-                        <MenuItem mnemonicParsing="false" text="Center Graph" onAction="#onCenter"/>
-                        <MenuItem mnemonicParsing="false" text="Zoom to Fit" onAction="#onZoomToFit"/>
-                        <MenuItem mnemonicParsing="false" text="Zoom to Normal" onAction="#onDeZoom"/>
+                        <MenuItem mnemonicParsing="false" onAction="#onReset" text="Clear Graph" />
+                        <SeparatorMenuItem mnemonicParsing="false" />
+                        <MenuItem mnemonicParsing="false" onAction="#onCenter" text="Center Graph" />
+                        <MenuItem mnemonicParsing="false" onAction="#onZoomToFit" text="Zoom to Fit" />
+                        <MenuItem mnemonicParsing="false" onAction="#onDeZoom" text="Zoom to Normal" />
                     </items>
                 </MenuButton>
+                <ToggleButton fx:id="toggleRightSidebar" focusTraversable="false" mnemonicParsing="false" onAction="#toggleRightSidebar" styleClass="slideButton">
+                    <font>
+                        <Font name="System Bold" size="14.0" />
+                    </font>
+                    <graphic>
+                        <ImageView>
+                            <image>
+                                <Image url="@nb-24.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </ToggleButton>
             </children>
             <padding>
-                <Insets bottom="10.0" left="5.0" right="10.0" top="10.0"/>
+                <Insets bottom="10.0" left="5.0" right="10.0" top="10.0" />
             </padding>
         </HBox>
-        <VBox fx:id="boxSide" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
-              prefWidth="250.0" spacing="10.0" styleClass="sideFade" AnchorPane.bottomAnchor="0.0"
-              AnchorPane.leftAnchor="-250.0" AnchorPane.topAnchor="0.0">
+        <VBox fx:id="boxSide" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="250.0" spacing="10.0" styleClass="sideFade" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="-250.0" AnchorPane.topAnchor="0.0">
             <children>
                 <FlowPane alignment="BASELINE_LEFT">
                     <children>
-                        <Button fx:id="buttonLogin" mnemonicParsing="false" onAction="#loginToCoinbase"
-                                text="Login to CoinBase" HBox.hgrow="NEVER"/>
-                        <Button fx:id="buttonLogout" mnemonicParsing="false" onAction="#logoutOfCoinbase" text="Logout"
-                                HBox.hgrow="NEVER"/>
+                        <Button fx:id="buttonLogin" mnemonicParsing="false" onAction="#loginToCoinbase" text="Login to CoinBase" HBox.hgrow="NEVER" />
+                        <Button fx:id="buttonLogout" mnemonicParsing="false" onAction="#logoutOfCoinbase" text="Logout" HBox.hgrow="NEVER" />
                     </children>
                 </FlowPane>
-                <TreeView fx:id="treeViewEntries" showRoot="false" VBox.vgrow="ALWAYS"/>
+                <TreeView fx:id="treeViewEntries" showRoot="false" VBox.vgrow="ALWAYS" />
             </children>
             <padding>
-                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
+                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
             </padding>
         </VBox>
-        <AnchorPane fx:id="paneLogin" layoutX="250.0" layoutY="50.0" styleClass="loginWebView" visible="false"
-                    AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="250.0" AnchorPane.rightAnchor="10.0"
-                    AnchorPane.topAnchor="46.0">
+        <AnchorPane fx:id="paneLogin" layoutX="250.0" layoutY="50.0" styleClass="loginWebView" visible="false" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="250.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="46.0">
             <children>
-                <WebView fx:id="webViewLogin" layoutX="500.0" layoutY="100.0" prefHeight="-1.0" prefWidth="-1.0"
-                         AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
-                         AnchorPane.topAnchor="0.0"/>
-                <Button mnemonicParsing="false" onAction="#closeWebView" styleClass="webCloseButton" text="X"
-                        AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"/>
+                <WebView fx:id="webViewLogin" layoutX="500.0" layoutY="100.0" prefHeight="-1.0" prefWidth="-1.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                <Button mnemonicParsing="false" onAction="#closeWebView" styleClass="webCloseButton" text="X" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
             </children>
         </AnchorPane>
-        <StackPane layoutX="737.786376953125" layoutY="587.2124633789062" AnchorPane.bottomAnchor="0.0"
-                   AnchorPane.rightAnchor="0.0">
+        <StackPane layoutX="737.786376953125" layoutY="587.2124633789062" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0">
             <children>
-                <ProgressIndicator fx:id="progressIndicator" layoutX="213.4833984375" layoutY="566.3447265625"
-                                   visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0"/>
-                <Label fx:id="labelProgressBacklog"/>
+                <ProgressIndicator fx:id="progressIndicator" layoutX="213.4833984375" layoutY="566.3447265625" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+                <Label fx:id="labelProgressBacklog" />
             </children>
         </StackPane>
+        <VBox fx:id="boxRightSide" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="250.0" spacing="10.0" styleClass="rightSideFade" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="-250.0" AnchorPane.topAnchor="0.0">
+            <padding>
+                <Insets bottom="10.0" left="10.0" right="10.0" />
+            </padding>
+            <children>
+                <VBox spacing="10.0">
+                    <children>
+                        <Label text="Transaction Info" />
+                        <CheckBox fx:id="checkTxHash" mnemonicParsing="false" selected="true" text="Hash" />
+                        <CheckBox fx:id="checkTxBtc" mnemonicParsing="false" selected="true" text="Total in Bitcoin" />
+                        <CheckBox fx:id="checkTxUsd" mnemonicParsing="false" text="Total in USD" />
+                        <CheckBox fx:id="checkTxDate" mnemonicParsing="false" selected="true" text="Transaction Data and Time" />
+                        <CheckBox fx:id="checkTxHeight" mnemonicParsing="false" selected="true" text="Hight in Blockchain" />
+                        <CheckBox fx:id="checkTxCoins" mnemonicParsing="false" selected="true" text="Coins in, out, and unspent" />
+                    </children>
+                    <padding>
+                        <Insets top="10.0" />
+                    </padding>
+                </VBox>
+                <VBox spacing="10.0">
+                    <children>
+                        <Label text="Unspent Coins Info" />
+                        <CheckBox fx:id="checkUnspentHash" mnemonicParsing="false" selected="true" text="Source Hash and Position" />
+                        <CheckBox fx:id="checkUnspentBtc" mnemonicParsing="false" selected="true" text="Total in Bitcoin" />
+                        <CheckBox fx:id="checkUnspentUsd" mnemonicParsing="false" text="Total in USD" />
+                    </children>
+                    <padding>
+                        <Insets top="10.0" />
+                    </padding>
+                </VBox>
+                <VBox spacing="10.0" visible="false">
+                    <children>
+                        <Label text="Graph Layout" />
+                        <CheckBox mnemonicParsing="false" text="Source Hash and Position" />
+                        <CheckBox mnemonicParsing="false" text="Total un USD" />
+                        <CheckBox mnemonicParsing="false" text="Total in Bitcoin" />
+                    </children>
+                    <padding>
+                        <Insets top="10.0" />
+                    </padding>
+                </VBox>
+            </children>
+        </VBox>
     </children>
 </AnchorPane>
