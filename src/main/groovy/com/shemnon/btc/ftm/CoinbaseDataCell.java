@@ -60,7 +60,11 @@ public class CoinbaseDataCell extends TreeCell<JsonBase> {
             setText(null);
         } else if (item instanceof CBAddress) {
             CBAddress address = (CBAddress)item;
-            type.setText("Wallet: " + address.getLabel());
+            if (address.getLabel().isEmpty()) {
+                type.setText("Unnamed Wallet");
+            } else {
+                type.setText(address.getLabel());
+            }
             Date createdAt = address.getCreatedAt();
             if (createdAt == null) {
                 date.setText("");
@@ -71,11 +75,17 @@ public class CoinbaseDataCell extends TreeCell<JsonBase> {
             dataCell.getChildren().setAll(type, hash, date);
             setGraphic(dataCell);
         } else if (item instanceof CBTransaction) {
+            System.out.println(item.dumpJson());
             CBTransaction trans = (CBTransaction) item;
-            if (trans.isSpend()) {
-                type.setText("Spend " + trans.getAmount());
+            String note = trans.getNotes();
+            if (note != null && !note.isEmpty()) {
+                type.setText(trans.getNotes());
             } else {
-                type.setText("Receive " + trans.getAmount());
+                if (trans.isSpend()) {
+                    type.setText("Spend " + trans.getAmount().substring(1));
+                } else {
+                    type.setText("Receive " + trans.getAmount());
+                }
             }
             date.setText(dateFormat.format(trans.getCreatedAt()));
             hash.setText(JsonBase.shortHash(trans.getHash()));

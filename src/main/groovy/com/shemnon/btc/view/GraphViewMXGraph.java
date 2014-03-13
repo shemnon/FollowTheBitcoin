@@ -20,6 +20,7 @@ import javafx.animation.*;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.Node;
+import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -30,8 +31,6 @@ import javafx.scene.text.Text;
 import javafx.util.Duration;
 
 import javax.swing.*;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
@@ -42,7 +41,6 @@ import java.util.function.BiConsumer;
  */
 public class GraphViewMXGraph {
     
-    NumberFormat btcFormat = new DecimalFormat("\u0e3f###,###.### ### ###");
     
     BiConsumer<MouseEvent, JsonBase> clickHandler;
 
@@ -55,6 +53,7 @@ public class GraphViewMXGraph {
     Map<String, Object> keyToEdgeCell = new ConcurrentHashMap<>();
     Map<String, Pane> keyToVertexNode = new ConcurrentHashMap<>();
     Map<String, List<Line>> keyToEdgeNode = new ConcurrentHashMap<>();
+    Map<String, Label> keyToEdgeLabel = new ConcurrentHashMap<>();
 
     Pane graphPane;
     
@@ -209,13 +208,44 @@ public class GraphViewMXGraph {
                         mxCellState cellState = entry.getValue();
                         List<Line> newLines = new ArrayList<>(cellState.getAbsolutePointCount() - 1);
                         List<Line> prevEdge = null;
+                        Label prevLabel = null;
                         if (animate) {
-                            prevEdge = keyToEdgeNode.get(cell.getId());
+                            prevEdge = keyToEdgeNode.get(key);
+                            prevLabel = keyToEdgeLabel.get(key);
                         }
                         if (prevEdge != null && prevEdge.size() == 0) {
                             prevEdge = null;
                         }
 
+                        // add the line label and fade in/move
+                        if (cellState.getLabel().isEmpty()) {
+                            if (prevLabel != null) {
+                                nodesToDelete.add(prevLabel);
+                                keyToEdgeLabel.remove(key, prevLabel);
+                            }
+                        }  else {
+                            mxRectangle labelPoint = cellState.getLabelBounds();
+                            if (prevLabel == null) {
+                                prevLabel  = new Label(cellState.getLabel());
+                                prevLabel.getStyleClass().add("edgeLabel");
+
+                                prevLabel.resizeRelocate(labelPoint.getX(), labelPoint.getY(), labelPoint.getWidth(), labelPoint.getHeight());
+                                prevLabel.setOpacity(0.0);
+                                animations.add(new KeyValue(prevLabel.opacityProperty(), 1.0, Interpolator.EASE_IN));
+
+                            } else {
+                                prevLabel.setText(cellState.getLabel());
+                                animations.add(
+                                        new KeyValue(prevLabel.layoutXProperty(), labelPoint.getX() - dx, Interpolator.EASE_BOTH));
+                                animations.add(
+                                        new KeyValue(prevLabel.layoutYProperty(), labelPoint.getY() - dy, Interpolator.EASE_BOTH)
+                                );
+                            }
+                            keyToEdgeLabel.put(key, prevLabel);
+                            newKids.add(0, prevLabel);
+                        }
+                        
+                        // move the lines and fade in/create
                         for (int i = 1; i < cellState.getAbsolutePointCount(); i ++) {
                             mxPoint prevPoint = cellState.getAbsolutePoint(i-1);
                             mxPoint nextPoint = cellState.getAbsolutePoint(i);
@@ -231,10 +261,10 @@ public class GraphViewMXGraph {
                                     l.setFill(Color.BLACK);
                                 }
                                 newLines.add(l);
-                                animations.add(new KeyValue(l.startXProperty(), prevPoint.getX()));
-                                animations.add(new KeyValue(l.startYProperty(), prevPoint.getY()));
-                                animations.add(new KeyValue(l.endXProperty(), nextPoint.getX()));
-                                animations.add(new KeyValue(l.endYProperty(), nextPoint.getY()));
+                                animations.add(new KeyValue(l.startXProperty(), prevPoint.getX(), Interpolator.EASE_BOTH));
+                                animations.add(new KeyValue(l.startYProperty(), prevPoint.getY(), Interpolator.EASE_BOTH));
+                                animations.add(new KeyValue(l.endXProperty(), nextPoint.getX(), Interpolator.EASE_BOTH));
+                                animations.add(new KeyValue(l.endYProperty(), nextPoint.getY(), Interpolator.EASE_BOTH));
                             } else {
                                 Line l = new Line(prevPoint.getX(), prevPoint.getY(), nextPoint.getX(), nextPoint.getY());
                                 l.setFill(Color.BLACK);
@@ -248,17 +278,15 @@ public class GraphViewMXGraph {
                             mxPoint end = cellState.getAbsolutePoint(cellState.getAbsolutePointCount() - 1);
                             for (int i = newLines.size(); i < prevEdge.size(); i++) {
                                 Line l = prevEdge.get(i);
-                                animations.add(new KeyValue(l.startXProperty(), end.getX()));
-                                animations.add(new KeyValue(l.startYProperty(), end.getY()));
-                                animations.add(new KeyValue(l.endXProperty(), end.getX()));
-                                animations.add(new KeyValue(l.endYProperty(), end.getY()));
+                                animations.add(new KeyValue(l.startXProperty(), end.getX(), Interpolator.EASE_BOTH));
+                                animations.add(new KeyValue(l.startYProperty(), end.getY(), Interpolator.EASE_BOTH));
+                                animations.add(new KeyValue(l.endXProperty(), end.getX(), Interpolator.EASE_BOTH));
+                                animations.add(new KeyValue(l.endYProperty(), end.getY(), Interpolator.EASE_BOTH));
                                 nodesToDelete.add(l);
                             }
                         }
-
                         keyToEdgeNode.put(key, newLines);
                         newKids.addAll(0, newLines);
-
                     } else if (cell.isVertex()) {
                         mxGeometry geom = cell.getGeometry();
                         
@@ -349,10 +377,13 @@ public class GraphViewMXGraph {
 
     private void fillUnspentOutput(CoinInfo coin, Pane box) {
         if (showCoinNodeHash.get()) {
-            box.getChildren().add(new Text(btcFormat.format(coin.getValue())));
+            box.getChildren().add(new Text(JsonBase.shortHash(coin.getAddr())));
+        }
+        if (showCoinNodeUSD.get()) {
+            box.getChildren().add(new Text(JsonBase.USD_FORMAT.format(coin.getValueUSD())));
         }
         if (showCoinNodeBitcoin.get()) {
-            box.getChildren().add(new Text(JsonBase.shortHash(coin.getAddr())));
+            box.getChildren().add(new Text(JsonBase.BTC_FORMAT.format(coin.getValue())));
         }
         box.autosize();
     }
@@ -395,9 +426,11 @@ public class GraphViewMXGraph {
             box.getChildren().add(new Text(JsonBase.shortHash(tx.getHash())));
         }
         if (showTxBitcoin.get()) {
-            box.getChildren().add(new Text(btcFormat.format(tx.getInputValue())));
+            box.getChildren().add(new Text(JsonBase.BTC_FORMAT.format(tx.getInputValue())));
         }
-        //todo usd
+        if (showTxUSD.get()) {
+            box.getChildren().add(new Text(JsonBase.USD_FORMAT.format(tx.getInputValueUSD())));
+        }
         if (showTxDate.get()) {
             box.getChildren().add(new Text(tx.getTimeString()));
         }

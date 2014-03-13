@@ -1,5 +1,6 @@
 package com.shemnon.btc.blockchaininfo
 
+import com.shemnon.btc.coinbase.CBPriceHistory
 import com.shemnon.btc.ftm.JsonBase
 import groovy.json.JsonSlurper
 
@@ -78,6 +79,10 @@ public class TXInfo extends JsonBase {
             jsonSeed.inputs*.prev_out?.value*.longValue()?.sum() 
         }
     }
+    
+    double getInputValueUSD() {
+        CBPriceHistory.instance.getPrice(timeMs).orElse(0.0) * inputValue
+    }
 
     long getOutputValueSatoshi() {
         jsonSeed.out*.value*.longValue()?.sum()
@@ -86,6 +91,11 @@ public class TXInfo extends JsonBase {
     double getOutputValue() {
         outputValueSatoshi / 100000000.0
     }
+
+    double getOutputValueUSD() {
+        CBPriceHistory.instance.getPrice(timeMs).orElse(0.0) * outputValue
+    }
+
 
     long getFeePaidSatoshi() {
         if (coinbase) {
@@ -101,6 +111,10 @@ public class TXInfo extends JsonBase {
         } else {
             inputValue - outputValue
         } 
+    }
+    
+    double getFeePaidUSD() {
+        CBPriceHistory.instance.getPrice(timeMs).orElse(0.0) * feePaid
     }
     
     BlockInfo getBlock() {
@@ -133,13 +147,13 @@ public class TXInfo extends JsonBase {
     }
     
     public long getTimeMs() {
-        return jsonSeed.time
+        return jsonSeed.time.longValue() * 1000
     }
     
     public String getTimeString() {
         Integer time = jsonSeed.time;
         if (time != null) {
-            return dateFormat.format(new Date(time.longValue() * 1000))
+            return dateFormat.format(timeMs)
         } else {
             return "?";
         }

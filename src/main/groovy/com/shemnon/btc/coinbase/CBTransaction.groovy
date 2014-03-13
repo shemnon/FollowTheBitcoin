@@ -26,4 +26,8 @@ public class CBTransaction extends JsonBase {
     boolean isSpend() {
         return jsonSeed.amount.amount[0] == '-'
     }
+    
+    String getNotes() {
+        return jsonSeed.notes
+    }
 }

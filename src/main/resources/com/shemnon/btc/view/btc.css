@@ -29,3 +29,8 @@
  -fx-border-color: black;
  -fx-border-width: 1px;
 }
+
+.edgeLabel {
+    -fx-font-size: 0.833333em; /* 10pt - 2 less than the default font */
+    -fx-background-color:#fff8
+}

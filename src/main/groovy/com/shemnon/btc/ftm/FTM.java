@@ -49,21 +49,26 @@ public class FTM {
     @FXML VBox boxSide;
     @FXML Button buttonLogin;
     @FXML Button buttonLogout;
-    @FXML CheckBox checkTxHash;
     @FXML CheckBox checkTxBtc;
-    @FXML CheckBox checkTxUsd;
     @FXML CheckBox checkTxDate;
+    @FXML CheckBox checkTxHash;
     @FXML CheckBox checkTxHeight;
+    @FXML CheckBox checkTxUsd;
     @FXML CheckBox checkTxCoins;
-    @FXML CheckBox checkUnspentHash;
     @FXML CheckBox checkUnspentBtc;
+    @FXML CheckBox checkUnspentHash;
     @FXML CheckBox checkUnspentUsd;
     @FXML ChoiceBox<String> choiceType;
-    @FXML HBox loginPane;
     @FXML Label labelProgressBacklog;
+    @FXML ToggleGroup lines;
+    @FXML HBox loginPane;
     @FXML AnchorPane mapPane;
     @FXML AnchorPane paneLogin;
     @FXML ProgressIndicator progressIndicator;
+    @FXML RadioButton radioLineAddr;
+    @FXML RadioButton radioLineBTC;
+    @FXML RadioButton radioLineNone;
+    @FXML RadioButton radioLineUSD;
     @FXML TextField textSearch;
     @FXML ToggleButton toggleRightSidebar;
     @FXML ToggleButton toggleSidebar;
@@ -537,6 +542,26 @@ public class FTM {
                     })
             );
 
+            radioLineBTC.selectedProperty().addListener((obv, o, n) -> {
+                if (n) {
+                    changeLineSummary(true, false, false);
+                }
+            });
+            radioLineUSD.selectedProperty().addListener((obv, o, n) -> {
+                if (n) {
+                    changeLineSummary(false, true, false);
+                }
+            });
+            radioLineAddr.selectedProperty().addListener((obv, o, n) -> {
+                if (n) {
+                    changeLineSummary(false, false, true);
+                }
+            });
+            radioLineNone.selectedProperty().addListener((obv, o, n) -> {
+                if (n) {
+                    changeLineSummary(false, false, false);
+                }
+            });
             
             coinBaseAPI = new CoinBaseAPI(coinBaseAuth, false, false);
             coinBaseAuth.accessTokenProperty().addListener(change -> offThread(this::updateCoinbaseData));
@@ -545,6 +570,15 @@ public class FTM {
         } catch (Exception e) {
             e.printStackTrace(System.out);
         }
+    }
+
+    private void changeLineSummary(boolean btc, boolean usd, boolean addr) {
+        CoinInfo.setBtcInSummary(btc);
+        CoinInfo.setUsdInSummary(!btc && usd);
+        CoinInfo.setAddrInSummary(!btc && !usd && addr);
+        gv.resizeGraphNodes();
+        gv.layout();
+        gv.rebuildGraph(false);
     }
 
     private void graphNeedsUpdating(boolean animate) {

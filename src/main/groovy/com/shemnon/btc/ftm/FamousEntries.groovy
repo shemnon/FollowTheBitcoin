@@ -51,10 +51,10 @@ class FamousEntries {
                         hsh:'1dda0f8827518ce4d1d824bf7600f75ec7e199774a090a947c58a65ab63552e3'])
                 ),
                 new TreeItem<>(new CBTransaction(
-                        [notes: 'MtGox 29K Binary Split',
-                        amount:[amount:'29999.99', currency:'BTC'], 
-                        created_at: '2014-03-07T05:01:08+00:00', 
-                        hsh:'02aa71ee0fc00e7cc867b490de78db434f6045e95c3864c607b0dca151186d1e'])
+                        [notes: 'MtGox 19K Binary Split',
+                        amount:[amount:'19999.99', currency:'BTC'], 
+                        created_at: '2014-03-07T07:29:02+00:00', 
+                        hsh:'a4b08370f09186eadcc415fe1a3b0d55e74a9eab9400a5a9fdb4031a6d7eba18'])
                 ),
         )
         // other heists?

@@ -1,5 +1,6 @@
 package com.shemnon.btc.blockchaininfo
 
+import com.shemnon.btc.coinbase.CBPriceHistory
 import com.shemnon.btc.ftm.JsonBase
 
 import java.util.concurrent.ConcurrentHashMap
@@ -11,6 +12,10 @@ import java.util.concurrent.ConcurrentHashMap
 class CoinInfo extends JsonBase {
     
     static Map<String, CoinInfo> coincache = new ConcurrentHashMap()
+    
+    static boolean btcInSummary = true;
+    static boolean usdInSummary = false;
+    static boolean addrInSummary = false;
     
     String compkey
     boolean toAddrChecked = false
@@ -50,6 +55,10 @@ class CoinInfo extends JsonBase {
         return jsonSeed.value.longValue()
     }
     
+    public double getValueUSD() {
+        CBPriceHistory.instance.getPrice(sourceTX.timeMs).orElse(0.0) * value
+    }
+    
     public TXInfo getSourceTX() {
          return TXInfo.query(jsonSeed.tx_index)
     }
@@ -61,6 +70,18 @@ class CoinInfo extends JsonBase {
             toAddrChecked = true
         }
         return targetTX
+    }
+    
+    public String toString() {
+        if (btcInSummary) {
+            return BTC_FORMAT.format(getValue())
+        } else if (usdInSummary) {
+            return USD_FORMAT.format(getValueUSD())
+        } else if (addrInSummary) {
+            return shortHash(getAddr())
+        } else {
+            return "";
+        }
     }
 
 }

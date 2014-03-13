@@ -20,6 +20,7 @@ dependencies {
     testCompile 'junit:junit:4.11'
     compile localGroovy()
     compile files('lib/jgraphx.jar')
+    compile 'com.google.guava:guava:16.0.1'
 }
 
 test {
@@ -33,12 +34,12 @@ javafx {
     profiles {
         macosx {
             category = 'public.app-category.finance'
-            appID 'com.shemnon.ftm.WheresMyBitcoin'
+            appID 'com.shemnon.ftm.TrailOfBitcoins'
         }
     }
     
-    appID 'WheresMyBitcoin'
-    appName 'Where\'s My Bitcoin'
+    appID 'TrailOfBitcoins'
+    appName 'Trail of Bitcoins'
     mainClass = 'com.shemnon.btc.ftm.Main'
     systemProperties = [
             'coinbase.client.id': coinbaseClientId, // define in ~/.gradle/gradle.properties
@@ -48,7 +49,7 @@ javafx {
     category = 'demo'
     copyright = 'Copyright (c) 2014 Danno Ferrin'
     description = '''A visual graph of the Bitcoin Blockchain and your transactions.'''
-    licenseType = '3 Clause BSD'
+    licenseType = 'GPL v2'
     vendor = 'Danno Ferrin'
     
 }
