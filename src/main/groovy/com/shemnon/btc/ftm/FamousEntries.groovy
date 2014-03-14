@@ -28,10 +28,10 @@ import javafx.scene.control.TreeItem
 class FamousEntries {
 
     static TreeItem<JsonBase> createFamousTree() {
-        TreeItem<JsonBase> addresses = new TreeItem<>(new JsonBaseLabel("Addresses"))
+        TreeItem<JsonBase> addresses = new TreeItem<>(new JsonBaseLabel("Addresses (50 newest tx)"))
         addresses.children.addAll(
                 new TreeItem<>(new CBAddress([
-                        label: 'Dorian Nakamoto Donations',
+                        label: 'Dorian Donations',
                         address: '1Dorian4RoXcnBv9hnQ4Y2C1an6NJ4UrjX',
                         created_at: ''
                 ])),

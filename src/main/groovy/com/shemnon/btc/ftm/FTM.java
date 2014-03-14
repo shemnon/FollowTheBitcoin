@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static javafx.beans.binding.Bindings.isEmpty;
@@ -68,15 +69,17 @@ public class FTM {
     @FXML Button buttonLogin;
     @FXML Button buttonLogout;
     @FXML CheckBox checkTxBtc;
+    @FXML CheckBox checkTxCoins;
     @FXML CheckBox checkTxDate;
     @FXML CheckBox checkTxHash;
     @FXML CheckBox checkTxHeight;
     @FXML CheckBox checkTxUsd;
-    @FXML CheckBox checkTxCoins;
     @FXML CheckBox checkUnspentBtc;
     @FXML CheckBox checkUnspentHash;
     @FXML CheckBox checkUnspentUsd;
     @FXML ChoiceBox<String> choiceType;
+    @FXML CheckBox helpCheckbox;
+    @FXML AnchorPane helpPane;
     @FXML Label labelProgressBacklog;
     @FXML ToggleGroup lines;
     @FXML HBox loginPane;
@@ -88,6 +91,7 @@ public class FTM {
     @FXML RadioButton radioLineNone;
     @FXML RadioButton radioLineUSD;
     @FXML TextField textSearch;
+    @FXML ToggleButton toggleHelp;
     @FXML ToggleButton toggleRightSidebar;
     @FXML ToggleButton toggleSidebar;
     @FXML TreeView<JsonBase> treeViewEntries;
@@ -199,10 +203,22 @@ public class FTM {
     }
 
     private void expandAddress(AddressInfo ai) {
+        String address = ai.getAddress();
+        if (address == null) return;
+        
         if (Platform.isFxApplicationThread()) {
             offThread(() -> expandAddress(ai));
         } else {
-            ai.getTXs().forEach(this::expandTransaction);
+            ai.getTXs().forEach(tx -> {
+                Consumer<? super CoinInfo> maybeShowCoin = coin ->
+                {
+                    if (address.equals(coin.getAddr())) {
+                        gv.addCoin(coin);
+                    }
+                };
+                tx.getInputs().forEach(maybeShowCoin);
+                tx.getOutputs().forEach(maybeShowCoin);
+            });
         }
     }
 
@@ -293,32 +309,73 @@ public class FTM {
         coinBaseAuth.setVisualAuthInProgress(false);
         paneLogin.setVisible(false);
     }
+    
+    @FXML
+    void closeHelp(ActionEvent event) {
+        helpPane.setVisible(false);
+    }
+    
+    @FXML
+    void toggleHelp(ActionEvent event) {
+        helpPane.setVisible(!helpPane.isVisible());
+    }
 
 
     public void updateCoinbaseData() {
-        String un = coinBaseAPI.getUserName();
+        String token = coinBaseAuth.getAccessToken();
+        //noinspection StatementWithEmptyBody
+        if (token == null) {
+            // do nothing 
+        } else if (token.isEmpty()) {
+            Platform.runLater(() -> {
+                // expand famous transactions
+                TreeItem<JsonBase> famousTransactions = treeViewEntries.getRoot().getChildren().get(1);
+                famousTransactions.getChildren().forEach(ti -> ti.setExpanded(true));
+                famousTransactions.setExpanded(true);
 
-        List<CBAddress> addresses = coinBaseAPI.getAddresses();
-        List<CBTransaction> transactions = coinBaseAPI.getTransactions();
+                //JavaFX bug workaround
+                treeViewEntries.setShowRoot(true);
+                treeViewEntries.setShowRoot(false);
+                
+                showSidebar();
+                toggleSidebar.setSelected(true);
+            });
+        } else {
+            String un = coinBaseAPI.getUserName();
+    
+            List<CBAddress> addresses = coinBaseAPI.getAddresses();
+            List<CBTransaction> transactions = coinBaseAPI.getTransactions();
+    
+            // scrub in-coinbase transaction since they supply no blockchain hash
+            transactions.removeIf(trans -> (trans.getHash() == null));
+    
+            Platform.runLater(() -> {
+                buttonLogout.setText("Logout " + un);
+                // expand coinbase children
+                // expand coinbase
+                coinbaseTreeLabel.setExpanded(true);
+                coinbaseAddresses.setExpanded(true);
+                coinbaseTransactions.setExpanded(true);
 
-        // scrub in-coinbase transaction since they supply no blockchain hash
-        transactions.removeIf(trans -> (trans.getHash() == null));
+                //noinspection Convert2Diamond,Convert2MethodRef
+                coinbaseAddresses.getChildren().setAll(addresses.stream()
+                        .map(addr -> new TreeItem<JsonBase>(addr))
+                        .collect(Collectors.toList())
+                );
+                //noinspection Convert2Diamond,Convert2MethodRef
+                coinbaseTransactions.getChildren().setAll(transactions.stream()
+                        .map(tx -> new TreeItem<JsonBase>(tx))
+                        .collect(Collectors.toList())
+                );
+                
+                //JavaFX bug workaround
+                treeViewEntries.setShowRoot(true);
+                treeViewEntries.setShowRoot(false);
 
-        Platform.runLater(() -> {
-            buttonLogout.setText("Logout " + un);
-            //noinspection Convert2Diamond,Convert2MethodRef
-            coinbaseAddresses.getChildren().setAll(addresses.stream()
-                    .map(addr -> new TreeItem<JsonBase>(addr))
-                    .collect(Collectors.toList())
-            );
-            //noinspection Convert2Diamond,Convert2MethodRef
-            coinbaseTransactions.getChildren().setAll(transactions.stream()
-                    .map(tx -> new TreeItem<JsonBase>(tx))
-                    .collect(Collectors.toList())
-            );
-            showSidebar();
-            toggleSidebar.setSelected(true);
-        });
+                showSidebar();
+                toggleSidebar.setSelected(true);
+            });
+        }
     }
 
     public void expandObject(JsonBase jbo) {
@@ -495,8 +552,14 @@ public class FTM {
             buttonLogin.managedProperty().bind(buttonLogin.visibleProperty());
             buttonLogout.managedProperty().bind(buttonLogout.visibleProperty());
 
-            buttonLogout.visibleProperty().bind(Bindings.isNotNull(coinBaseAuth.accessTokenProperty()));
-            buttonLogin.visibleProperty().bind(Bindings.isNull(coinBaseAuth.accessTokenProperty()));
+            buttonLogout.visibleProperty().bind(
+                    Bindings.and(
+                        Bindings.isNotNull(coinBaseAuth.accessTokenProperty()),
+                        Bindings.notEqual("", coinBaseAuth.accessTokenProperty())));
+            buttonLogin.visibleProperty().bind(
+                    Bindings.and(
+                            Bindings.isNotNull(coinBaseAuth.accessTokenProperty()),
+                            Bindings.equal("", coinBaseAuth.accessTokenProperty())));
 
             WritableValue<Number> leftOffset = new WritableValue<Number>() {
                 @Override
@@ -550,7 +613,7 @@ public class FTM {
             gv.showTxCoinCountProperty().bindBidirectional(checkTxCoins.selectedProperty());
             gv.showCoinNodeHashProperty().bindBidirectional(checkUnspentHash.selectedProperty());
             gv.showCoinNodeBitcoinProperty().bindBidirectional(checkUnspentBtc.selectedProperty());
-            gv.showCoinNodeHashProperty().bindBidirectional(checkUnspentUsd.selectedProperty());
+            gv.showCoinNodeUSDProperty().bindBidirectional(checkUnspentUsd.selectedProperty());
             
             gv.layoutFlags().forEach(bp ->
                     bp.addListener((obv, o, n) -> {
@@ -584,6 +647,19 @@ public class FTM {
             coinBaseAPI = new CoinBaseAPI(coinBaseAuth, false, false);
             coinBaseAuth.accessTokenProperty().addListener(change -> offThread(this::updateCoinbaseData));
             offThread(() -> coinBaseAuth.checkTokens(true, false));
+            
+            helpCheckbox.selectedProperty().addListener((obv, o, n) -> coinBaseAuth.saveToken(Boolean.toString(n), "hideHelp"));
+            
+            String hideHelp = coinBaseAuth.loadToken("hideHelp");
+            if (Boolean.valueOf(hideHelp)) {
+                helpCheckbox.setSelected(true);
+                toggleHelp.setSelected(false);
+                helpPane.setVisible(false);
+            } else {
+                helpCheckbox.setSelected(false);
+                toggleHelp.setSelected(true);
+                helpPane.setVisible(true);
+            }
 
         } catch (Exception e) {
             e.printStackTrace(System.out);

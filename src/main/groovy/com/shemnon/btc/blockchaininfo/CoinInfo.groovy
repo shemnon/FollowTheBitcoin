@@ -57,8 +57,13 @@ class CoinInfo extends JsonBase {
         return coincache[coinKey]
     }
 
-    static CoinInfo preCache(def j) {
-        coincache[coinKey(j)] ?: new CoinInfo(j)
+    static CoinInfo preCache(def j, TXInfo newSpendTX = null) {
+        CoinInfo ci = coincache[coinKey(j)] ?: new CoinInfo(j)
+        if (newSpendTX) {
+            ci.targetTX = newSpendTX
+            ci.toAddrChecked = true
+        }
+        return ci
     }
     
     public String getAddr() {

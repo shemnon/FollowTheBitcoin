@@ -40,7 +40,7 @@
  -fx-border-width: 1px;
  -fx-border-radius: 20px;
  -fx-background-radius: 20px;
- -fx-padding: 4px
+ -fx-padding: 8px 4px 8px 4px;
 }
 
 .coin:hover {
@@ -50,5 +50,5 @@
 
 .edgeLabel {
     -fx-font-size: 0.833333em; /* 10pt - 2 less than the default font */
-    -fx-background-color:#fff8
+    -fx-background-color:#fffc
 }

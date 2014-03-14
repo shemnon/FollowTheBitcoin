@@ -34,12 +34,12 @@ javafx {
     profiles {
         macosx {
             category = 'public.app-category.finance'
-            appID 'com.shemnon.ftm.TrailOfBitcoins'
+            appID 'com.shemnon.ftm.TrailOfBitcoin'
         }
     }
     
-    appID 'TrailOfBitcoins'
-    appName 'Trail of Bitcoins'
+    appID 'TrailOfBitcoin'
+    appName 'Trail of Bitcoin'
     mainClass = 'com.shemnon.btc.ftm.Main'
     systemProperties = [
             'coinbase.client.id': coinbaseClientId, // define in ~/.gradle/gradle.properties

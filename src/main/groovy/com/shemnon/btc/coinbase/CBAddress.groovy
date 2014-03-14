@@ -30,11 +30,11 @@ public class CBAddress extends JsonBase {
     }
     
     String getLabel() {
-        return jsonSeed.label
+        return jsonSeed.label ?: ""
     }
 
     String getAddress() {
-        return jsonSeed.address
+        return jsonSeed.address ?: ""
     }
 
     Date getCreatedAt() {

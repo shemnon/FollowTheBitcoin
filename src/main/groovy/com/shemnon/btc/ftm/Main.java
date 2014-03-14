@@ -32,6 +32,7 @@ public class Main extends Application {
     
     public static void main(String... args) {
         Application.launch(Main.class, args);
+        ExceptionHandler.registerExceptionHandler();
     }
     
     @Override
@@ -54,5 +55,25 @@ public class Main extends Application {
         
         primaryStage.show();
         
+    }
+}
+
+class ExceptionHandler implements Thread.UncaughtExceptionHandler {
+    public void uncaughtException(Thread t, Throwable e) {
+        handle(e);
+    }
+
+    public void handle(Throwable throwable) {
+        try {
+            System.out.println("Uncaught!");
+            throwable.printStackTrace(System.err);
+        } catch (Throwable t) {
+            // don't let the exception get thrown out, will cause infinite looping!
+        }
+    }
+
+    public static void registerExceptionHandler() {
+        Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler());
+        System.setProperty("sun.awt.exception.handler", ExceptionHandler.class.getName());
     }
 }

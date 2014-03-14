@@ -35,6 +35,7 @@ import com.shemnon.btc.ftm.JsonBase;
 import com.shemnon.btc.blockchaininfo.CoinInfo;
 import com.shemnon.btc.blockchaininfo.TXInfo;
 import javafx.animation.*;
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.Node;
@@ -77,10 +78,10 @@ public class GraphViewMXGraph {
     
     BooleanProperty showTxHash = new SimpleBooleanProperty(true);
     BooleanProperty showTxBitcoin = new SimpleBooleanProperty(true);
-    BooleanProperty showTxUSD = new SimpleBooleanProperty(true);
+    BooleanProperty showTxUSD = new SimpleBooleanProperty(false);
     BooleanProperty showTxDate = new SimpleBooleanProperty(true);
     BooleanProperty showTxHeight = new SimpleBooleanProperty(true);
-    BooleanProperty showTxCoinCount = new SimpleBooleanProperty(true);
+    BooleanProperty showTxCoinCount = new SimpleBooleanProperty(false);
     
     BooleanProperty showCoinNodeHash = new SimpleBooleanProperty(true);
     BooleanProperty showCoinNodeBitcoin = new SimpleBooleanProperty(true);
@@ -162,7 +163,7 @@ public class GraphViewMXGraph {
         Node n = keyToVertexNode.get(tx.getHash());
         if (n == null) return;
 
-        boolean inputsExpanded = tx.getInputs().stream().allMatch(ci -> keyToVertexNode.containsKey(ci.getSourceTX().getHash()));
+        boolean inputsExpanded = tx.getInputs().stream().allMatch(ci -> ci.getToAddrChecked() && keyToVertexNode.containsKey(ci.getSourceTX().getHash()));
 
         boolean outputsExpanded = tx.getOutputs().stream().allMatch(ci -> {
             TXInfo target = ci.getTargetTX();
@@ -173,11 +174,13 @@ public class GraphViewMXGraph {
             }
         });
 
-        if (inputsExpanded && outputsExpanded) {
-            n.getStyleClass().add("expanded");
-        } else {
-            n.getStyleClass().remove("expanded");
-        }
+        Platform.runLater(() -> { 
+            if (inputsExpanded && outputsExpanded) {
+                n.getStyleClass().add("expanded");
+            } else {
+                n.getStyleClass().remove("expanded");
+            }
+        });
     }
 
     public void resizeGraphNodes() {
@@ -221,7 +224,7 @@ public class GraphViewMXGraph {
                 entry -> {
                     mxCell cell = (mxCell) entry.getKey();
                     if (cell.isEdge()) {
-                        String key = cell.getId();
+                        String key = ((CoinInfo)cell.getValue()).getCompkey();
 
                         mxCellState cellState = entry.getValue();
                         List<Line> newLines = new ArrayList<>(cellState.getAbsolutePointCount() - 1);
@@ -308,7 +311,13 @@ public class GraphViewMXGraph {
                     } else if (cell.isVertex()) {
                         mxGeometry geom = cell.getGeometry();
                         
-                        String key = cell.getId();
+                        Object o =  cell.getValue();
+                        String key = null;
+                        if (o instanceof CoinInfo) {
+                            key = ((CoinInfo)o).getCompkey();
+                        } else if (o instanceof TXInfo) {
+                            key = ((TXInfo)o).getHash();
+                        }
                         boolean setInitialValue = !keyToVertexNode.containsKey(key);
                         
                         Node node = getFXNodeForVertexCell(cell.getValue());

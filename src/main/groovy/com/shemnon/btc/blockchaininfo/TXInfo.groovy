@@ -40,7 +40,7 @@ public class TXInfo extends JsonBase {
     
     private TXInfo(def json) {
         jsonSeed = json
-        inputs =  coinbase ? [] :jsonSeed.inputs*.prev_out.collect {j -> CoinInfo.preCache(j)}
+        inputs =  coinbase ? [] :jsonSeed.inputs*.prev_out.collect {j -> CoinInfo.preCache(j, this)}
         outputs = jsonSeed.out.collect {j -> CoinInfo.preCache(j)}
 
         txcache[hash] = this

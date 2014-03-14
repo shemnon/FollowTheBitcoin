@@ -67,7 +67,9 @@ class AddressInfo extends JsonBase {
     }
 
     List<TXInfo> getTXs() {
-        return jsonSeed.txs.collect {tx -> TXInfo.query(tx.hash) }
+        return jsonSeed.txs.collect {tx -> 
+            return TXInfo.query(tx.hash);
+        } 
     }
     
 //    def getBalance() {
@@ -76,11 +78,11 @@ class AddressInfo extends JsonBase {
 //        }
 //    }
     
-    def getAddress() {
+    String getAddress() {
         jsonSeed.address
     }
     
-    def getHash160() {
+    String getHash160() {
         jsonSeed.hash160
     }
     

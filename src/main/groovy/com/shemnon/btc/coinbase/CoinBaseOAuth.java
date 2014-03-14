@@ -156,7 +156,7 @@ public class CoinBaseOAuth {
                     }
                 }
             } catch (Throwable t) {
-                accessToken.setValue("");
+                Platform.runLater(() -> accessToken.setValue(""));
                 t.printStackTrace();
                 break;
             }
@@ -200,7 +200,7 @@ public class CoinBaseOAuth {
             Platform.runLater(() -> accessToken.setValue((String) m.get("access_token")));
             return true;
         } catch (IOException e) {
-            accessToken.setValue("");
+            Platform.runLater(() -> accessToken.setValue(""));
             System.out.println(postContent);
             e.printStackTrace();
         }
@@ -257,7 +257,7 @@ public class CoinBaseOAuth {
 
             Platform.runLater(() -> accessToken.setValue((String) m.get("access_token")));
         } catch (Exception e) {
-            accessToken.setValue("");
+            Platform.runLater(() -> accessToken.setValue(""));
             e.printStackTrace();
         }
     }
