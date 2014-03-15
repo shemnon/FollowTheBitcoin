@@ -1,5 +1,5 @@
 /*
- * Trail of Bitcoin
+ * Follow the  Bitcoin
  * Copyright (C) 2014  Danno Ferrin
  *
  * This program is free software; you can redistribute it and/or
@@ -37,7 +37,7 @@ public class Main extends Application {
     
     @Override
     public void start(Stage primaryStage) throws Exception {
-        primaryStage.setTitle("Trail of \u0e3fitcoins");
+        primaryStage.setTitle("Follow the \u0e3fitcoin");
         
         FXMLLoader loader = new FXMLLoader(Main.class.getResource("/com/shemnon/btc/ftm/FTM.fxml"));
         loader.load();

@@ -1,5 +1,5 @@
 /*
- * Trail of Bitcoin
+ * Follow the Bitcoin
  * Copyright (C) 2014  Danno Ferrin
  *
  * This program is free software; you can redistribute it and/or

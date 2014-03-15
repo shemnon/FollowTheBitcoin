@@ -1,8 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="US-ASCII"?>
 
 <!--
 /*
- * Trail of Bitcoin
+ * Follow the  Bitcoin
  * Copyright (C) 2014  Danno Ferrin
  *
  * This program is free software; you can redistribute it and/or
@@ -146,7 +146,7 @@
                               AnchorPane.rightAnchor="-0.0">
                             <children>
                                 <Label layoutX="182.3271484375" layoutY="10.0" prefWidth="530.0"
-                                       text="Trail of ฿itcoins" textAlignment="CENTER" wrapText="true">
+                                       text="Follow the &#x0e3f;itcoin" textAlignment="CENTER" wrapText="true">
                                     <font>
                                         <Font name="System Bold" size="20.0"/>
                                     </font>
@@ -169,14 +169,14 @@
                                     </VBox.margin>
                                 </Label>
                                 <Label minHeight="0.0" minWidth="0.0"
-                                       text="Ever wanted to snoopinto what other people are doing with their bitcoins? "
+                                       text="Ever wanted to snoop into what other people are doing with their bitcoins? "
                                        wrapText="true" VBox.vgrow="SOMETIMES">
                                     <VBox.margin>
                                         <Insets left="20.0" right="20.0"/>
                                     </VBox.margin>
                                 </Label>
                                 <Label minHeight="0.0" minWidth="0.0"
-                                       text="Wonder no more!  Now you can visually and interactively follow the trail of bitcoins through the blockchain."
+                                       text="Wonder no more!  Now you can visually and interactively follow the bitcoin through the blockchain."
                                        wrapText="true" VBox.vgrow="SOMETIMES">
                                     <VBox.margin>
                                         <Insets left="20.0" right="20.0"/>
