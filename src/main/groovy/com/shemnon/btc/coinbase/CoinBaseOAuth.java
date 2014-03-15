@@ -49,12 +49,12 @@ public class CoinBaseOAuth {
 
     static final byte[] STORE_PASSWORD = "correct battery ".getBytes();
     static final String FTM_KEY = "FTM_OAuth";
-    
-    static final String COINBASE_CLIENT_ID = System.getProperty("coinbase.client.id");
-    static final String COINBASE_CLIENT_SECRET = System.getProperty("coinbase.client.secret");
 
-    static final String CALLBACK_URL = "urn:ietf:wg:oauth:2.0:oob";
-    static final String COINBASE_OAUTH_LOGIN = "https://coinbase.com/oauth/authorize?" +
+    public static final String COINBASE_CLIENT_ID = System.getProperty("coinbase.client.id");
+    public static final String COINBASE_CLIENT_SECRET = System.getProperty("coinbase.client.secret");
+
+    public static final String CALLBACK_URL = "urn:ietf:wg:oauth:2.0:oob";
+    public static final String COINBASE_OAUTH_LOGIN = "https://coinbase.com/oauth/authorize?" +
             "response_type=code" +
             "&client_id=" + COINBASE_CLIENT_ID +
             "&redirect_uri=" + CALLBACK_URL +
@@ -127,7 +127,7 @@ public class CoinBaseOAuth {
         saveToken(null, "refresh_token");
         saveToken(null, "access_token");
         saveToken(null, "expire");
-        Platform.runLater(() -> accessToken.setValue(null));
+        Platform.runLater(() -> accessToken.setValue(""));
     }
     
     /**
@@ -161,9 +161,12 @@ public class CoinBaseOAuth {
                 break;
             }
         } while (false);
-        
-        if (!success && attemptLogin) {
-            requestLogin();
+                
+        if (!success) {
+            Platform.runLater(() -> accessToken.setValue(""));
+            if (attemptLogin) {
+                requestLogin();
+            }
         }
          
         return success;

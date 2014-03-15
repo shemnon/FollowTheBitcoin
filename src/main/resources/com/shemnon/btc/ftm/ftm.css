@@ -31,8 +31,20 @@
  -fx-padding: 0.1em 0.2em 0.1em 0.3em;
 }
 
+.tipCloseButton {
+ -fx-border-width: 1;
+ -fx-border-color: #0003;
+ -fx-border-radius: 3 3 3 3;
+ -fx-background-color: #0002;
+ -fx-padding: 0.1em 0.2em 0.1em 0.3em;
+}
+
 .headerFade {
  -fx-background-color: linear-gradient(#fffe 0%, #fffe 60%, #fff0 100%);
+}
+
+.bottomFade {
+ -fx-background-color: linear-gradient(to top, #fffe 0%, #fffe 60%, #fff0 100%);
 }
 
 .sideFade {

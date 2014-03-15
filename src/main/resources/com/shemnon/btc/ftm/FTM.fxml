@@ -32,18 +32,21 @@
             prefWidth="800.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.shemnon.btc.ftm.FTM">
     <children>
-        <AnchorPane fx:id="mapPane" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-        <Pane prefHeight="60.0" styleClass="headerFade" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
-        <HBox fx:id="boxHeader" spacing="10.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+        <AnchorPane fx:id="mapPane" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0"
+                    AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"/>
+        <Pane prefHeight="60.0" styleClass="headerFade" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"/>
+        <HBox fx:id="boxHeader" spacing="10.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+              AnchorPane.topAnchor="0.0">
             <children>
-                <ToggleButton fx:id="toggleSidebar" focusTraversable="false" mnemonicParsing="false" onAction="#toggleSidebar" styleClass="slideButton">
+                <ToggleButton fx:id="toggleSidebar" focusTraversable="false" mnemonicParsing="false"
+                              onAction="#toggleSidebar" styleClass="slideButton">
                     <font>
-                        <Font name="System Bold" size="14.0" />
+                        <Font name="System Bold" size="14.0"/>
                     </font>
                     <graphic>
                         <ImageView>
                             <image>
-                                <Image url="@nb-24.png" />
+                                <Image url="@nb-24.png"/>
                             </image>
                         </ImageView>
                     </graphic>
@@ -51,32 +54,35 @@
                 <ChoiceBox fx:id="choiceType" minHeight="-Infinity" minWidth="-Infinity" prefWidth="110.0">
                     <items>
                         <FXCollections fx:factory="observableArrayList">
-                            <String fx:value="Address" />
-                            <String fx:value="Transaction" />
-                            <String fx:value="Block" />
+                            <String fx:value="Address"/>
+                            <String fx:value="Transaction"/>
+                            <String fx:value="Block"/>
                         </FXCollections>
                     </items>
                     <value>
-                        <String fx:value="Address" />
+                        <String fx:value="Address"/>
                     </value>
                 </ChoiceBox>
-                <TextField fx:id="textSearch" alignment="BASELINE_LEFT" maxHeight="26.0" maxWidth="360.0" onAction="#newHash" prefColumnCount="32" promptText="Hash" HBox.hgrow="SOMETIMES" />
-                <Button minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#newHash" text="Add" />
-                <Pane maxWidth="1.7976931348623157E308" prefHeight="0.0" prefWidth="0.0" HBox.hgrow="SOMETIMES" />
+                <TextField fx:id="textSearch" alignment="BASELINE_LEFT" maxHeight="26.0" maxWidth="360.0"
+                           onAction="#newHash" prefColumnCount="32" promptText="Hash" HBox.hgrow="SOMETIMES"/>
+                <Button minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#newHash"
+                        text="Add"/>
+                <Pane maxWidth="1.7976931348623157E308" prefHeight="0.0" prefWidth="0.0" HBox.hgrow="SOMETIMES"/>
                 <MenuButton minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" text="Graph">
                     <items>
-                        <MenuItem mnemonicParsing="false" onAction="#onReset" text="Clear Graph" />
-                        <SeparatorMenuItem mnemonicParsing="false" />
-                        <MenuItem mnemonicParsing="false" onAction="#onCenter" text="Center Graph" />
-                        <MenuItem mnemonicParsing="false" onAction="#onZoomToFit" text="Zoom to Fit" />
-                        <MenuItem mnemonicParsing="false" onAction="#onDeZoom" text="Zoom to Normal" />
+                        <MenuItem mnemonicParsing="false" onAction="#onReset" text="Clear Graph"/>
+                        <SeparatorMenuItem mnemonicParsing="false"/>
+                        <MenuItem mnemonicParsing="false" onAction="#onCenter" text="Center Graph"/>
+                        <MenuItem mnemonicParsing="false" onAction="#onZoomToFit" text="Zoom to Fit"/>
+                        <MenuItem mnemonicParsing="false" onAction="#onDeZoom" text="Zoom to Normal"/>
                     </items>
                 </MenuButton>
-                <ToggleButton fx:id="toggleHelp" mnemonicParsing="false" onAction="#toggleHelp" styleClass="slideButton">
+                <ToggleButton fx:id="toggleHelp" mnemonicParsing="false" onAction="#toggleHelp"
+                              styleClass="slideButton">
                     <graphic>
                         <ImageView>
                             <image>
-                                <Image url="@Ambox_question.png" />
+                                <Image url="@Ambox_question.png"/>
                             </image>
                         </ImageView>
                     </graphic>
@@ -84,230 +90,291 @@
                 <ToggleButton fx:id="toggleRightSidebar" focusTraversable="false" mnemonicParsing="false"
                               onAction="#toggleRightSidebar" styleClass="slideButton">
                     <font>
-                        <Font name="System Bold" size="14.0" />
+                        <Font name="System Bold" size="14.0"/>
                     </font>
                     <graphic>
                         <ImageView>
                             <image>
-                                <Image url="@nb-24.png" />
+                                <Image url="@nb-24.png"/>
                             </image>
                         </ImageView>
                     </graphic>
                 </ToggleButton>
             </children>
             <padding>
-                <Insets bottom="10.0" left="5.0" right="10.0" top="10.0" />
+                <Insets bottom="10.0" left="5.0" right="10.0" top="10.0"/>
             </padding>
         </HBox>
-        <VBox fx:id="boxSide" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="250.0" spacing="10.0" styleClass="sideFade" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="-250.0" AnchorPane.topAnchor="0.0">
+        <VBox fx:id="boxSide" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
+              prefWidth="250.0" spacing="10.0" styleClass="sideFade" AnchorPane.bottomAnchor="0.0"
+              AnchorPane.leftAnchor="-250.0" AnchorPane.topAnchor="0.0">
             <children>
                 <FlowPane alignment="BASELINE_LEFT">
                     <children>
-                        <Button fx:id="buttonLogin" mnemonicParsing="false" onAction="#loginToCoinbase" text="Login to CoinBase" visible="false" HBox.hgrow="NEVER" />
-                        <Button fx:id="buttonLogout" mnemonicParsing="false" onAction="#logoutOfCoinbase" text="Logout" visible="false" HBox.hgrow="NEVER" />
+                        <Button fx:id="buttonLogin" mnemonicParsing="false" onAction="#loginToCoinbase"
+                                text="Login to CoinBase" visible="false" HBox.hgrow="NEVER"/>
+                        <Button fx:id="buttonLogout" mnemonicParsing="false" onAction="#logoutOfCoinbase" text="Logout"
+                                visible="false" HBox.hgrow="NEVER"/>
                     </children>
                 </FlowPane>
-                <TreeView fx:id="treeViewEntries" showRoot="false" VBox.vgrow="ALWAYS" />
+                <TreeView fx:id="treeViewEntries" showRoot="false" VBox.vgrow="ALWAYS"/>
             </children>
             <padding>
-                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
             </padding>
         </VBox>
-        <AnchorPane fx:id="paneLogin" layoutX="250.0" layoutY="50.0" styleClass="loginWebView" visible="false" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="250.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="46.0">
+        <AnchorPane fx:id="paneLogin" layoutX="250.0" layoutY="50.0" styleClass="loginWebView" visible="false"
+                    AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="250.0" AnchorPane.rightAnchor="10.0"
+                    AnchorPane.topAnchor="46.0">
             <children>
-                <WebView fx:id="webViewLogin" layoutX="500.0" layoutY="100.0" prefHeight="-1.0" prefWidth="-1.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                <Button mnemonicParsing="false" onAction="#closeWebView" styleClass="webCloseButton" text="X" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                <WebView fx:id="webViewLogin" layoutX="500.0" layoutY="100.0" prefHeight="-1.0" prefWidth="-1.0"
+                         AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                         AnchorPane.topAnchor="0.0"/>
+                <Button mnemonicParsing="false" onAction="#closeWebView" styleClass="webCloseButton" text="X"
+                        AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"/>
             </children>
         </AnchorPane>
-        <AnchorPane fx:id="helpPane" layoutX="250.0" layoutY="50.0" styleClass="loginWebView" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="250.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="46.0">
+        <AnchorPane fx:id="helpPane" layoutX="250.0" layoutY="50.0" styleClass="loginWebView"
+                    AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="250.0" AnchorPane.rightAnchor="10.0"
+                    AnchorPane.topAnchor="46.0">
             <children>
-                <ScrollPane hbarPolicy="NEVER" layoutX="5.0" layoutY="5.0" maxWidth="530.0" prefViewportHeight="518.0" prefViewportWidth="530.0" AnchorPane.bottomAnchor="30.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                <ScrollPane hbarPolicy="NEVER" layoutX="5.0" layoutY="5.0" maxWidth="530.0" prefViewportHeight="518.0"
+                            prefViewportWidth="530.0" AnchorPane.bottomAnchor="30.0" AnchorPane.leftAnchor="0.0"
+                            AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                     <content>
-                        <VBox layoutX="5.0" layoutY="5.0" minWidth="0.0" prefWidth="530.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="-0.0">
+                        <VBox layoutX="5.0" layoutY="5.0" minWidth="0.0" prefWidth="530.0" AnchorPane.leftAnchor="0.0"
+                              AnchorPane.rightAnchor="-0.0">
                             <children>
                                 <Label layoutX="182.3271484375" layoutY="10.0" prefWidth="530.0"
-                                       text="Trail of &#x0e3f;itcoins" textAlignment="CENTER"
-                                       wrapText="true">
+                                       text="Trail of ฿itcoins" textAlignment="CENTER" wrapText="true">
                                     <font>
-                                        <Font name="System Bold" size="20.0" />
+                                        <Font name="System Bold" size="20.0"/>
                                     </font>
                                     <padding>
-                                        <Insets top="30.0" />
+                                        <Insets top="30.0"/>
                                     </padding>
                                 </Label>
-                                <Label minHeight="0.0" minWidth="0.0" text="Ever wondered what happens to your bitcoins once you spend them?" wrapText="true" VBox.vgrow="SOMETIMES">
+                                <Label minHeight="0.0" minWidth="0.0"
+                                       text="Ever wondered what happens to your bitcoins once you spend them?"
+                                       wrapText="true" VBox.vgrow="SOMETIMES">
                                     <VBox.margin>
-                                        <Insets left="20.0" right="20.0" top="20.0" />
+                                        <Insets left="20.0" right="20.0" top="20.0"/>
                                     </VBox.margin>
                                 </Label>
-                                <Label minHeight="0.0" minWidth="0.0" text="Ever wondered where your bitcoins came from?" wrapText="true" VBox.vgrow="SOMETIMES">
+                                <Label minHeight="0.0" minWidth="0.0"
+                                       text="Ever wondered where your bitcoins came from?" wrapText="true"
+                                       VBox.vgrow="SOMETIMES">
                                     <VBox.margin>
-                                        <Insets left="20.0" right="20.0" />
+                                        <Insets left="20.0" right="20.0"/>
                                     </VBox.margin>
                                 </Label>
-                                <Label minHeight="0.0" minWidth="0.0" text="Ever wanted to snoopinto what other people are doing with their bitcoins? " wrapText="true" VBox.vgrow="SOMETIMES">
+                                <Label minHeight="0.0" minWidth="0.0"
+                                       text="Ever wanted to snoopinto what other people are doing with their bitcoins? "
+                                       wrapText="true" VBox.vgrow="SOMETIMES">
                                     <VBox.margin>
-                                        <Insets left="20.0" right="20.0" />
+                                        <Insets left="20.0" right="20.0"/>
                                     </VBox.margin>
                                 </Label>
-                                <Label minHeight="0.0" minWidth="0.0" text="Wonder no more!  Now you can visually and interactively follow the trail of bitcoins through the blockchain." wrapText="true" VBox.vgrow="SOMETIMES">
+                                <Label minHeight="0.0" minWidth="0.0"
+                                       text="Wonder no more!  Now you can visually and interactively follow the trail of bitcoins through the blockchain."
+                                       wrapText="true" VBox.vgrow="SOMETIMES">
                                     <VBox.margin>
-                                        <Insets left="20.0" right="20.0" />
+                                        <Insets left="20.0" right="20.0"/>
                                     </VBox.margin>
                                     <padding>
-                                        <Insets top="10.0" />
+                                        <Insets top="10.0"/>
                                     </padding>
                                 </Label>
                                 <Label alignment="TOP_LEFT" graphicTextGap="10.0" minHeight="0.0" minWidth="0.0"
                                        text="This button opens up two different sidebars.  The left sidebar contains a list of your Coinbase.com transactions and addresses, and also some &quot;famous&quot; addresses and transactions fot you to explore.  The right sidebar will let you add and remove information from the displayed boxes and lines."
                                        wrapText="true">
                                     <padding>
-                                        <Insets top="10.0" />
+                                        <Insets top="10.0"/>
                                     </padding>
                                     <graphic>
                                         <ImageView>
                                             <image>
-                                                <Image url="@nb-24.png" />
+                                                <Image url="@nb-24.png"/>
                                             </image>
                                         </ImageView>
                                     </graphic>
                                     <VBox.margin>
-                                        <Insets left="20.0" right="20.0" />
+                                        <Insets left="20.0" right="20.0"/>
                                     </VBox.margin>
                                 </Label>
-                                <Label minHeight="0.0" minWidth="0.0" text="You can also paste random hashes in the box on top.  You can add addresses, transactions, or even mined blocks." wrapText="true" VBox.vgrow="SOMETIMES">
+                                <Label minHeight="0.0" minWidth="0.0"
+                                       text="You can also paste random hashes in the box on top.  You can add addresses, transactions, or even mined blocks."
+                                       wrapText="true" VBox.vgrow="SOMETIMES">
                                     <VBox.margin>
-                                        <Insets left="20.0" right="20.0" />
+                                        <Insets left="20.0" right="20.0"/>
                                     </VBox.margin>
                                     <padding>
-                                        <Insets top="10.0" />
+                                        <Insets top="10.0"/>
                                     </padding>
                                 </Label>
                                 <HBox spacing="10.0">
                                     <children>
-                                        <VBox minHeight="-Infinity" minWidth="-Infinity" styleClass="tx" HBox.hgrow="NEVER">
+                                        <VBox minHeight="-Infinity" minWidth="-Infinity" styleClass="tx"
+                                              HBox.hgrow="NEVER">
                                             <children>
                                                 <Label text="abcdef9...4321"/>
-                                                <Label text="฿ 1.001" />
-                                                <Label text="\$ 680.00" />
-                                                <Label text="14-03-18 23:59:59" />
-                                                <Label text="Block# 290000" />
+                                                <Label text="฿ 1.001"/>
+                                                <Label text="\$ 680.00"/>
+                                                <Label text="14-03-18 23:59:59"/>
+                                                <Label text="Block# 290000"/>
                                             </children>
                                         </VBox>
                                         <Label text="This box represents a transaction.  It can contain a shortened txid of the hash, the total in bitcioin and USD (at the time of the transaction), the time of the transaction, and the block number it was recorded in."
                                                wrapText="true" HBox.hgrow="ALWAYS"/>
                                     </children>
                                     <padding>
-                                        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                                        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
                                     </padding>
                                 </HBox>
                                 <HBox spacing="10.0">
                                     <children>
-                                        <VBox minHeight="-Infinity" minWidth="-Infinity" styleClass="tx,expanded" HBox.hgrow="NEVER">
+                                        <VBox minHeight="-Infinity" minWidth="-Infinity" styleClass="tx,expanded"
+                                              HBox.hgrow="NEVER">
                                             <children>
                                                 <Label text="abcdef9...4321"/>
-                                                <Label text="฿ 1.001" />
-                                                <Label text="\$ 680.00" />
-                                                <Label text="14-03-18 23:59:59" />
-                                                <Label text="Block# 290000" />
+                                                <Label text="฿ 1.001"/>
+                                                <Label text="\$ 680.00"/>
+                                                <Label text="14-03-18 23:59:59"/>
+                                                <Label text="Block# 290000"/>
                                             </children>
                                         </VBox>
                                         <VBox>
                                             <children>
-                                                <Label text="This transaction has been &quot;expanded,&quot; meaning that all the input and outputs to this transaction are represented on the graph already." wrapText="true" HBox.hgrow="ALWAYS" />
-                                                <Label text="Double click a transaction to show all input and output transactions." wrapText="true" HBox.hgrow="ALWAYS">
+                                                <Label text="This transaction has been &quot;expanded,&quot; meaning that all the input and outputs to this transaction are represented on the graph already."
+                                                       wrapText="true" HBox.hgrow="ALWAYS"/>
+                                                <Label text="Double click a transaction to show all input and output transactions."
+                                                       wrapText="true" HBox.hgrow="ALWAYS">
                                                     <padding>
-                                                        <Insets top="5.0" />
+                                                        <Insets top="5.0"/>
                                                     </padding>
                                                 </Label>
                                             </children>
                                         </VBox>
                                     </children>
                                     <padding>
-                                        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                                        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
                                     </padding>
                                 </HBox>
                                 <HBox spacing="10.0">
                                     <children>
-                                        <VBox minHeight="-Infinity" minWidth="137.0" styleClass="coin" HBox.hgrow="NEVER">
+                                        <VBox minHeight="-Infinity" minWidth="137.0" styleClass="coin"
+                                              HBox.hgrow="NEVER">
                                             <children>
                                                 <Label text="1HashAd...4321"/>
-                                                <Label text="฿ 1.001" />
+                                                <Label text="฿ 1.001"/>
                                             </children>
                                         </VBox>
-                                        <Label text="This box represents an &quot;unspent output,&quot; basically bitcoin that has not been spent yet." wrapText="true" HBox.hgrow="ALWAYS" />
+                                        <Label text="This box represents an &quot;unspent output,&quot; basically bitcoin that has not been spent yet."
+                                               wrapText="true" HBox.hgrow="ALWAYS"/>
                                     </children>
                                     <padding>
-                                        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                                        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
                                     </padding>
                                 </HBox>
                             </children>
                             <padding>
-                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
                             </padding>
                         </VBox>
                     </content>
                 </ScrollPane>
-                <Button mnemonicParsing="false" onAction="#closeHelp" styleClass="webCloseButton" text="X" AnchorPane.rightAnchor="16.0" AnchorPane.topAnchor="0.0" />
-                <CheckBox fx:id="helpCheckbox" mnemonicParsing="false" text="Got it.  Don't Tell Me Again" AnchorPane.bottomAnchor="5.0" AnchorPane.rightAnchor="5.0" />
+                <Button mnemonicParsing="false" onAction="#closeHelp" styleClass="webCloseButton" text="X"
+                        AnchorPane.rightAnchor="16.0" AnchorPane.topAnchor="0.0"/>
+                <CheckBox fx:id="helpCheckbox" mnemonicParsing="false" text="Got it.  Don't Tell Me Again"
+                          AnchorPane.bottomAnchor="5.0" AnchorPane.rightAnchor="5.0"/>
             </children>
         </AnchorPane>
-        <VBox fx:id="boxRightSide" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="250.0" spacing="10.0" styleClass="rightSideFade" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="-250.0" AnchorPane.topAnchor="0.0">
+        <VBox fx:id="boxRightSide" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
+              prefWidth="250.0" spacing="10.0" styleClass="rightSideFade" AnchorPane.bottomAnchor="0.0"
+              AnchorPane.rightAnchor="-250.0" AnchorPane.topAnchor="0.0">
             <padding>
-                <Insets bottom="10.0" left="10.0" right="10.0" />
+                <Insets bottom="10.0" left="10.0" right="10.0"/>
             </padding>
             <children>
                 <VBox spacing="10.0">
                     <children>
-                        <Label text="Transaction Info" />
-                        <CheckBox fx:id="checkTxHash" mnemonicParsing="false" selected="true" text="Hash" />
-                        <CheckBox fx:id="checkTxBtc" mnemonicParsing="false" selected="true" text="Total in BTC" />
-                        <CheckBox fx:id="checkTxUsd" mnemonicParsing="false" text="Total in USD" />
-                        <CheckBox fx:id="checkTxDate" mnemonicParsing="false" selected="true" 
-                                  text="Transaction Data and Time" />
-                        <CheckBox fx:id="checkTxHeight" mnemonicParsing="false" selected="true" 
+                        <Label text="Transaction Info"/>
+                        <CheckBox fx:id="checkTxHash" mnemonicParsing="false" selected="true" text="Hash"/>
+                        <CheckBox fx:id="checkTxBtc" mnemonicParsing="false" selected="true" text="Total in BTC"/>
+                        <CheckBox fx:id="checkTxUsd" mnemonicParsing="false" text="Total in USD"/>
+                        <CheckBox fx:id="checkTxDate" mnemonicParsing="false" selected="true"
+                                  text="Transaction Data and Time"/>
+                        <CheckBox fx:id="checkTxHeight" mnemonicParsing="false" selected="true"
                                   text="Height in Blockchain"/>
-                        <CheckBox fx:id="checkTxCoins" mnemonicParsing="false" selected="false" 
-                                  text="Coins in, out, and unspent" />
+                        <CheckBox fx:id="checkTxCoins" mnemonicParsing="false" selected="false"
+                                  text="Coins in, out, and unspent"/>
                     </children>
                     <padding>
-                        <Insets top="10.0" />
+                        <Insets top="10.0"/>
                     </padding>
                 </VBox>
                 <VBox spacing="10.0">
                     <children>
-                        <Label text="Unspent Coins Info" />
-                        <CheckBox fx:id="checkUnspentHash" mnemonicParsing="false" selected="true" text="Source Hash and Position" />
-                        <CheckBox fx:id="checkUnspentBtc" mnemonicParsing="false" selected="true" text="Total in BTC" />
-                        <CheckBox fx:id="checkUnspentUsd" mnemonicParsing="false" text="Total in USD" />
+                        <Label text="Unspent Coins Info"/>
+                        <CheckBox fx:id="checkUnspentHash" mnemonicParsing="false" selected="true"
+                                  text="Source Hash and Position"/>
+                        <CheckBox fx:id="checkUnspentBtc" mnemonicParsing="false" selected="true" text="Total in BTC"/>
+                        <CheckBox fx:id="checkUnspentUsd" mnemonicParsing="false" text="Total in USD"/>
                     </children>
                     <padding>
-                        <Insets top="10.0" />
+                        <Insets top="10.0"/>
                     </padding>
                 </VBox>
                 <VBox spacing="10.0">
                     <children>
-                        <Label text="Transaction Lines" />
+                        <Label text="Transaction Lines"/>
                         <RadioButton fx:id="radioLineBTC" mnemonicParsing="false" selected="true" text="BTC Amount">
                             <toggleGroup>
-                                <ToggleGroup fx:id="lines" />
+                                <ToggleGroup fx:id="lines"/>
                             </toggleGroup>
                         </RadioButton>
-                        <RadioButton fx:id="radioLineUSD" mnemonicParsing="false" text="USD Amount" toggleGroup="$lines" />
-                        <RadioButton fx:id="radioLineAddr" mnemonicParsing="false" text="Address" toggleGroup="$lines" />
-                        <RadioButton fx:id="radioLineNone" mnemonicParsing="false" text="Nothing" toggleGroup="$lines" />
+                        <RadioButton fx:id="radioLineUSD" mnemonicParsing="false" text="USD Amount"
+                                     toggleGroup="$lines"/>
+                        <RadioButton fx:id="radioLineAddr" mnemonicParsing="false" text="Address" toggleGroup="$lines"/>
+                        <RadioButton fx:id="radioLineNone" mnemonicParsing="false" text="Nothing" toggleGroup="$lines"/>
                     </children>
                     <padding>
-                        <Insets top="10.0" />
+                        <Insets top="10.0"/>
                     </padding>
                 </VBox>
             </children>
         </VBox>
-        <StackPane layoutX="737.786376953125" layoutY="587.2124633789062" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0">
+        <StackPane layoutX="737.786376953125" layoutY="587.2124633789062" AnchorPane.bottomAnchor="0.0"
+                   AnchorPane.rightAnchor="0.0">
             <children>
-                <ProgressIndicator fx:id="progressIndicator" layoutX="213.4833984375" layoutY="566.3447265625" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
-                <Label fx:id="labelProgressBacklog" />
+                <ProgressIndicator fx:id="progressIndicator" layoutX="213.4833984375" layoutY="566.3447265625"
+                                   visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0"/>
+                <Label fx:id="labelProgressBacklog"/>
             </children>
         </StackPane>
+        <HBox fx:id="tipPanel" alignment="BASELINE_CENTER" prefHeight="40.0" spacing="10.0" styleClass="bottomFade"
+              AnchorPane.bottomAnchor="-40.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+            <children>
+                <Label fx:id="tipLabel" text="Send CryptoCrumb a Tip -"/>
+                <SplitMenuButton fx:id="tipButton" mnemonicParsing="false" onAction="#tip" text="One Fiat US Dollar - $1.00">
+                    <items>
+                        <MenuItem mnemonicParsing="false" text="One Fiat US Dollar - $1.00"/>
+                        <SeparatorMenuItem mnemonicParsing="false"/>
+                        <MenuItem onAction="#tip" mnemonicParsing="false" text="Coffee - $1.38"/>
+                        <MenuItem onAction="#tip" mnemonicParsing="false" text="Tea - $1.62"/>
+                        <MenuItem onAction="#tip" mnemonicParsing="false" text="Beer - $3.64"/>
+                        <MenuItem onAction="#tip" mnemonicParsing="false" text="Gold (reddit gold) - $3.99"/>
+                        <SeparatorMenuItem mnemonicParsing="false"/>
+                        <MenuItem onAction="#tip" mnemonicParsing="false" text="Dessert-like Coffee - $4.69"/>
+                        <MenuItem onAction="#tip" mnemonicParsing="false" text="A Pony (Twilight Sparkle) - $5.99"/>
+                        <MenuItem onAction="#tip" mnemonicParsing="false" text="Merkle's Root Beer - $7.99"/>
+                    </items>
+                </SplitMenuButton>
+                <Button mnemonicParsing="false" onAction="#hideTipBar" styleClass="tipCloseButton" text="X"/>
+            </children>
+            <padding>
+                <Insets bottom="5.0" left="5.0" right="5.0" top="10.0"/>
+            </padding>
+        </HBox>
     </children>
 </AnchorPane>
