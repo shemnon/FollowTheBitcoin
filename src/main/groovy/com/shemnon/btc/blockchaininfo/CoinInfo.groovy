@@ -20,6 +20,7 @@ package com.shemnon.btc.blockchaininfo
 
 import com.shemnon.btc.coinbase.CBPriceHistory
 import com.shemnon.btc.ftm.JsonBase
+import com.shemnon.btc.model.ICoin
 
 import java.util.concurrent.ConcurrentHashMap
 
@@ -27,13 +28,9 @@ import java.util.concurrent.ConcurrentHashMap
  * There is no such thing as a coin, this is an abstraction of tx input/output
  * Created by shemnon on 2 Mar 2014.
  */
-class CoinInfo extends JsonBase {
+class CoinInfo extends JsonBase implements ICoin {
     
     static Map<String, CoinInfo> coincache = new ConcurrentHashMap()
-    
-    static boolean btcInSummary = true;
-    static boolean usdInSummary = false;
-    static boolean addrInSummary = false;
     
     String compkey
     boolean toAddrChecked = false
@@ -96,12 +93,12 @@ class CoinInfo extends JsonBase {
     }
     
     public String toString() {
-        if (btcInSummary) {
-            return BTC_FORMAT.format(getValue())
-        } else if (usdInSummary) {
-            return USD_FORMAT.format(getValueUSD())
-        } else if (addrInSummary) {
-            return shortHash(getAddr())
+        if (showEdgeBTC.get()) {
+            return BTC_FORMAT.format(getValue());
+        } else if (showEdgeUSD.get()) {
+            return USD_FORMAT.format(getValueUSD());
+        } else if (showEdgeAddr.get()) {
+            return shortHash(getAddr());
         } else {
             return "";
         }

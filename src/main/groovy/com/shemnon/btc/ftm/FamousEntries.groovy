@@ -20,6 +20,7 @@ package com.shemnon.btc.ftm
 
 import com.shemnon.btc.coinbase.CBAddress
 import com.shemnon.btc.coinbase.CBTransaction
+import com.shemnon.btc.model.IBase
 import javafx.scene.control.TreeItem
 
 /**
@@ -27,7 +28,7 @@ import javafx.scene.control.TreeItem
  */
 class FamousEntries {
 
-    static TreeItem<JsonBase> createFamousTree() {
+    static TreeItem<IBase> createFamousTree() {
         TreeItem<JsonBase> addresses = new TreeItem<>(new JsonBaseLabel("Addresses (50 newest tx)"))
         addresses.children.addAll(
                 new TreeItem<>(new CBAddress([

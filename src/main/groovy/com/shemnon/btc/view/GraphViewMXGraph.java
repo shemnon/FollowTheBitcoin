@@ -28,12 +28,9 @@ import com.mxgraph.util.mxRectangle;
 import com.mxgraph.view.mxCellState;
 import com.mxgraph.view.mxGraph;
 import com.mxgraph.view.mxGraphView;
-import com.shemnon.btc.blockchaininfo.AddressInfo;
-import com.shemnon.btc.blockchaininfo.BlockInfo;
 import com.shemnon.btc.coinbase.CBTransaction;
 import com.shemnon.btc.ftm.JsonBase;
-import com.shemnon.btc.blockchaininfo.CoinInfo;
-import com.shemnon.btc.blockchaininfo.TXInfo;
+import com.shemnon.btc.model.*;
 import javafx.animation.*;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
@@ -61,7 +58,7 @@ import java.util.function.BiConsumer;
 public class GraphViewMXGraph {
     
     
-    BiConsumer<MouseEvent, JsonBase> clickHandler;
+    BiConsumer<MouseEvent, IBase> clickHandler;
 
     mxGraph mxGraph;
     mxIGraphModel mxGraphModel;
@@ -89,7 +86,7 @@ public class GraphViewMXGraph {
     
     Timeline animatingTimeline;
 
-    public GraphViewMXGraph(BiConsumer<MouseEvent, JsonBase> clickHandler) {
+    public GraphViewMXGraph(BiConsumer<MouseEvent, IBase> clickHandler) {
         this.clickHandler = clickHandler;
 
         mxGraph = new mxGraph();
@@ -101,7 +98,7 @@ public class GraphViewMXGraph {
         graphPane = new Pane();
     }
 
-    public Object addTransaction(TXInfo tx) {
+    public Object addTransaction(ITx tx) {
         try {
             String key = tx.getHash();
             Object o = keyToVertexCell.get(key);
@@ -113,12 +110,12 @@ public class GraphViewMXGraph {
             return o;
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println(tx.dumpJson());
+            System.out.println(((JsonBase)tx).dumpJson());
             throw e;
         }
     }
 
-    public Object addCoinAsNode(CoinInfo coin) {
+    public Object addCoinAsNode(ICoin coin) {
         try {
             String key = coin.getCompkey();
             Object o = keyToVertexCell.get(key);
@@ -129,17 +126,17 @@ public class GraphViewMXGraph {
             }
             return o;
         } catch (Exception e) {
-            System.out.println(coin.dumpJson());
+            System.out.println(((JsonBase)coin).dumpJson());
             throw e;
         }
     }
 
-    public Object addCoin(CoinInfo ci) {
+    public Object addCoin(ICoin ci) {
         String key = ci.getCompkey();
         Object o = keyToEdgeCell.get(key);
         if ((o == null || !mxGraphModel.isEdge(o)) && ci.getSourceTX() != null) {
-            TXInfo fromTX = ci.getSourceTX();
-            TXInfo toTX = ci.getTargetTX();
+            ITx fromTX = ci.getSourceTX();
+            ITx toTX = ci.getTargetTX();
             
             Object from = addTransaction(fromTX);
             Object to;
@@ -157,16 +154,16 @@ public class GraphViewMXGraph {
         return o;
     }
 
-    private void updateExpanded(TXInfo tx) {
+    private void updateExpanded(ITx tx) {
         if (tx == null) return;
         
         Node n = keyToVertexNode.get(tx.getHash());
         if (n == null) return;
 
-        boolean inputsExpanded = tx.getInputs().stream().allMatch(ci -> ci.getToAddrChecked() && keyToVertexNode.containsKey(ci.getSourceTX().getHash()));
+        boolean inputsExpanded = tx.getInputs().stream().allMatch(ci -> keyToVertexNode.containsKey(ci.getSourceTX().getHash()));
 
         boolean outputsExpanded = tx.getOutputs().stream().allMatch(ci -> {
-            TXInfo target = ci.getTargetTX();
+            ITx target = ci.getTargetTX();
             if (target == null) {
                 return keyToVertexNode.containsKey(ci.getCompkey());
             } else {
@@ -188,9 +185,9 @@ public class GraphViewMXGraph {
             if (e.getValue() instanceof mxCell) {
                 String key = e.getKey();
                 if (key.contains("#")) {
-                    recreateUnspentOutput(CoinInfo.query(key));
+                    recreateUnspentOutput(ICoin.query(key));
                 } else {
-                    recreateTXNode(TXInfo.query(key));
+                    recreateTXNode(ITx.query(key));
                 }
                 
                 Pane p = keyToVertexNode.get(e.getKey());
@@ -222,7 +219,7 @@ public class GraphViewMXGraph {
                 entry -> {
                     mxCell cell = (mxCell) entry.getKey();
                     if (cell.isEdge()) {
-                        String key = ((CoinInfo)cell.getValue()).getCompkey();
+                        String key = ((ICoin)cell.getValue()).getCompkey();
 
                         mxCellState cellState = entry.getValue();
                         List<Line> newLines = new ArrayList<>(cellState.getAbsolutePointCount() - 1);
@@ -311,10 +308,10 @@ public class GraphViewMXGraph {
                         
                         Object o =  cell.getValue();
                         String key = null;
-                        if (o instanceof CoinInfo) {
-                            key = ((CoinInfo)o).getCompkey();
-                        } else if (o instanceof TXInfo) {
-                            key = ((TXInfo)o).getHash();
+                        if (o instanceof ICoin) {
+                            key = ((ICoin)o).getCompkey();
+                        } else if (o instanceof ITx) {
+                            key = ((ITx)o).getHash();
                         }
                         boolean setInitialValue = !keyToVertexNode.containsKey(key);
                         
@@ -348,10 +345,10 @@ public class GraphViewMXGraph {
 
     private Node getFXNodeForVertexCell(Object value) {
         Node node;
-        if (value instanceof TXInfo) {
-            node = createTXNode((TXInfo)value);
-        } else if (value instanceof CoinInfo) {
-            node = createUnspentOutput((CoinInfo)value);
+        if (value instanceof ITx) {
+            node = createTXNode((ITx)value);
+        } else if (value instanceof ICoin) {
+            node = createUnspentOutput((ICoin)value);
         } else {
             node = new Rectangle(100, 100);
             ((Rectangle)node).setFill(Color.ORANGE);
@@ -363,7 +360,7 @@ public class GraphViewMXGraph {
         return graphPane;
     }
     
-    public void expandTransaction(TXInfo tx) {
+    public void expandTransaction(ITx tx) {
         tx.getOutputs().forEach(this::addCoin);
         tx.getInputs().forEach(this::addCoin);
         
@@ -371,7 +368,7 @@ public class GraphViewMXGraph {
         rebuildGraph(true);
     }
     
-    Pane createUnspentOutput(CoinInfo coin) {
+    Pane createUnspentOutput(ICoin coin) {
         if (keyToVertexCell.containsKey(coin.getCompkey())) {
             return keyToVertexNode.get(coin.getCompkey());
         } else {
@@ -389,7 +386,7 @@ public class GraphViewMXGraph {
         }
     }
 
-    Pane recreateUnspentOutput(CoinInfo ci) {
+    Pane recreateUnspentOutput(ICoin ci) {
         if (keyToVertexNode.containsKey(ci.getCompkey())) {
             Pane p = keyToVertexNode.get(ci.getCompkey());
             p.getChildren().clear();
@@ -400,20 +397,20 @@ public class GraphViewMXGraph {
         }
     }
 
-    private void fillUnspentOutput(CoinInfo coin, Pane box) {
+    private void fillUnspentOutput(ICoin coin, Pane box) {
         if (showCoinNodeHash.get()) {
-            box.getChildren().add(new Text(JsonBase.shortHash(coin.getAddr())));
+            box.getChildren().add(new Text(IBase.shortHash(coin.getAddr())));
         }
         if (showCoinNodeUSD.get()) {
-            box.getChildren().add(new Text(JsonBase.USD_FORMAT.format(coin.getValueUSD())));
+            box.getChildren().add(new Text(IBase.USD_FORMAT.format(coin.getValueUSD())));
         }
         if (showCoinNodeBitcoin.get()) {
-            box.getChildren().add(new Text(JsonBase.BTC_FORMAT.format(coin.getValue())));
+            box.getChildren().add(new Text(IBase.BTC_FORMAT.format(coin.getValue())));
         }
         box.autosize();
     }
 
-    Pane recreateTXNode(TXInfo tx) {
+    Pane recreateTXNode(ITx tx) {
         if (keyToVertexNode.containsKey(tx.getHash())) {
             Pane p = keyToVertexNode.get(tx.getHash());
             p.getChildren().clear();
@@ -424,7 +421,7 @@ public class GraphViewMXGraph {
         }
     }
 
-    Pane createTXNode(TXInfo tx) {
+    Pane createTXNode(ITx tx) {
         if (keyToVertexNode.containsKey(tx.getHash())) {
             return keyToVertexNode.get(tx.getHash());
         } else {
@@ -446,15 +443,15 @@ public class GraphViewMXGraph {
         }
     }
 
-    private void fillTXNode(TXInfo tx, Pane box) {
+    private void fillTXNode(ITx tx, Pane box) {
         if (showTxHash.get()) {
-            box.getChildren().add(new Text(JsonBase.shortHash(tx.getHash())));
+            box.getChildren().add(new Text(IBase.shortHash(tx.getHash())));
         }
         if (showTxBitcoin.get()) {
-            box.getChildren().add(new Text(JsonBase.BTC_FORMAT.format(tx.getInputValue())));
+            box.getChildren().add(new Text(IBase.BTC_FORMAT.format(tx.getInputValue())));
         }
         if (showTxUSD.get()) {
-            box.getChildren().add(new Text(JsonBase.USD_FORMAT.format(tx.getInputValueUSD())));
+            box.getChildren().add(new Text(IBase.USD_FORMAT.format(tx.getInputValueUSD())));
         }
         if (showTxDate.get()) {
             box.getChildren().add(new Text(tx.getTimeString()));
@@ -483,21 +480,21 @@ public class GraphViewMXGraph {
         graphPane.getChildren().clear();
     }
     
-    public void removeTX(TXInfo tx) {
+    public void removeTX(ITx tx) {
         mxGraph.removeCells(tx.getOutputs().stream().map(coin -> keyToEdgeCell.get(coin.getCompkey())).toArray());
         mxGraph.removeCells(new Object[] {keyToVertexCell.get(tx.getHash())});
-        tx.getOutputs().forEach(coinInfo -> {
-            keyToEdgeCell.remove(coinInfo.getCompkey());
+        tx.getOutputs().forEach(ICoin -> {
+            keyToEdgeCell.remove(ICoin.getCompkey());
         });
         mxGraph.removeCells(tx.getInputs().stream().map(coin -> keyToEdgeCell.get(coin.getCompkey())).toArray());
         mxGraph.removeCells(new Object[] {keyToVertexCell.get(tx.getHash())});
-        tx.getInputs().forEach(coinInfo -> {
-            keyToEdgeCell.remove(coinInfo.getCompkey());
+        tx.getInputs().forEach(ICoin -> {
+            keyToEdgeCell.remove(ICoin.getCompkey());
         });
         keyToVertexCell.remove(tx.getHash());
     }
 
-    public void removeCoinAsNode(CoinInfo ci) {
+    public void removeCoinAsNode(ICoin ci) {
         mxGraph.removeCells(new Object[] {keyToEdgeCell.get(ci.getCompkey()), 
                                           keyToVertexCell.get(ci.getCompkey())});
         keyToEdgeCell.remove(ci.getCompkey());
@@ -505,17 +502,17 @@ public class GraphViewMXGraph {
     }
 
 
-    public Collection<TXInfo> findUnexpandedOutputTX(TXInfo tx) {
-        Set<TXInfo> outputs = new HashSet<>();
+    public Collection<ITx> findUnexpandedOutputTX(ITx tx) {
+        Set<ITx> outputs = new HashSet<>();
         findUnexpandedOutputTX(tx, outputs);
         return outputs;
     }
     
-    void findUnexpandedOutputTX(TXInfo tx, Collection<TXInfo> collector) {
+    void findUnexpandedOutputTX(ITx tx, Collection<ITx> collector) {
         // not the most efficient, some nodes could be considered multiple times for diamond merges,
         // but since this is a DAG there are no loops.
         tx.getOutputs().forEach(coin -> {
-            TXInfo target = coin.getTargetTX();
+            ITx target = coin.getTargetTX();
             if (target != null && keyToVertexCell.containsKey(target.getHash())) {
                 findUnexpandedOutputTX(target, collector);
             } else {
@@ -524,17 +521,17 @@ public class GraphViewMXGraph {
         });
     }
     
-    public Collection<TXInfo> findUnexpandedInputTX(TXInfo tx) {
-        Set<TXInfo> inputs = new HashSet<>();
+    public Collection<ITx> findUnexpandedInputTX(ITx tx) {
+        Set<ITx> inputs = new HashSet<>();
         findUnexpandedInputTX(tx, inputs);
         return inputs;
     }
     
-    void findUnexpandedInputTX(TXInfo tx, Collection<TXInfo> collector) {
+    void findUnexpandedInputTX(ITx tx, Collection<ITx> collector) {
         // not the most efficient, some nodes could be considered multiple times for diamond TXes,
         // but since this is a DAG there are no loops.
         tx.getInputs().forEach(coin -> {
-            TXInfo target = coin.getSourceTX();
+            ITx target = coin.getSourceTX();
             if (target != null && keyToVertexCell.containsKey(target.getHash())) {
                 findUnexpandedInputTX(target, collector);
             } else {
@@ -543,19 +540,19 @@ public class GraphViewMXGraph {
         });
     }
     
-    public Node getNode(JsonBase jb) {
-        if (jb instanceof TXInfo) {
-            return keyToVertexNode.get(((TXInfo) jb).getHash());
-        } else if (jb instanceof CoinInfo) {
-            return keyToVertexNode.get(((CoinInfo) jb).getCompkey());
+    public Node getNode(IBase jb) {
+        if (jb instanceof ITx) {
+            return keyToVertexNode.get(((ITx) jb).getHash());
+        } else if (jb instanceof ICoin) {
+            return keyToVertexNode.get(((ICoin) jb).getCompkey());
         } else if (jb instanceof CBTransaction) {
             return keyToVertexNode.get(((CBTransaction) jb).getHash());
-        } else if (jb instanceof BlockInfo) {
+        } else if (jb instanceof IBlock) {
             // focus on the coinbase TX
-            return keyToVertexNode.get(((BlockInfo) jb).getTXs().get(0).getHash());
-        } else if (jb instanceof AddressInfo) {
+            return keyToVertexNode.get(((IBlock) jb).getTXs().get(0).getHash());
+        } else if (jb instanceof IAddress) {
             // return the first one, truely arbitrary
-            List<TXInfo> txs = ((AddressInfo) jb).getTXs();
+            List<ITx> txs = ((IAddress) jb).getTXs();
             if (txs.isEmpty()) return null;
             return keyToVertexNode.get(txs.get(0).getHash());
         } else {

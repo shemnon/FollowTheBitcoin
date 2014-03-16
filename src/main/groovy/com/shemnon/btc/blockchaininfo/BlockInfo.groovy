@@ -19,6 +19,8 @@
 package com.shemnon.btc.blockchaininfo
 
 import com.shemnon.btc.ftm.JsonBase
+import com.shemnon.btc.model.IBlock
+import com.shemnon.btc.model.ITx
 import groovy.json.JsonSlurper
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,9 +28,9 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Created by shemnon on 1 Mar 2014.
  */
-public class BlockInfo extends JsonBase {
+public class BlockInfo extends JsonBase implements IBlock {
 
-    static Map<String, BlockInfo> blockcache = new ConcurrentHashMap<>()
+    static Map<String, IBlock> blockcache = new ConcurrentHashMap<>()
 
     private BlockInfo(def json) {
         jsonSeed = json
@@ -63,7 +65,7 @@ public class BlockInfo extends JsonBase {
         blockcache[bk.hash] ?: new BlockInfo(bk)
     }
 
-    List<TXInfo> getTXs() {
+    List<ITx> getTXs() {
         return jsonSeed.tx.collect {tx -> TXInfo.query(tx.hash) }
     }
 

@@ -20,6 +20,9 @@ package com.shemnon.btc.blockchaininfo
 
 import com.shemnon.btc.coinbase.CBPriceHistory
 import com.shemnon.btc.ftm.JsonBase
+import com.shemnon.btc.model.IBlock
+import com.shemnon.btc.model.ICoin
+import com.shemnon.btc.model.ITx
 import groovy.json.JsonSlurper
 
 import java.text.DateFormat
@@ -29,12 +32,12 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Created by shemnon on 28 Feb 2014.
  */
-public class TXInfo extends JsonBase {
+public class TXInfo extends JsonBase implements ITx {
     
     static Map<String, TXInfo> txcache = new ConcurrentHashMap<>()
     
-    List<CoinInfo> inputs
-    List<CoinInfo> outputs
+    List<ICoin> inputs
+    List<ICoin> outputs
     
     protected static final DateFormat dateFormat =  new SimpleDateFormat("yy-MM-dd HH:mm");
     
@@ -135,7 +138,7 @@ public class TXInfo extends JsonBase {
         CBPriceHistory.instance.getPrice(timeMs).orElse(0.0) * feePaid
     }
     
-    BlockInfo getBlock() {
+    IBlock getBlock() {
         return BlockInfo.query(blockHeight as String)
     }
 
@@ -155,11 +158,11 @@ public class TXInfo extends JsonBase {
         jsonSeed.tx_index
     }
     
-    public List<CoinInfo> getCoins() {
+    public List<ICoin> getCoins() {
         return inputs + outputs
     }
     
-    public List<CoinInfo> getUnspentCoins() {
+    public List<ICoin> getUnspentCoins() {
         return outputs.findAll {c -> 
             (c.getJsonSeed().containsKey('spent') && c.getJsonSeed().spent == false) || c.getTargetTX() == null}
     }

@@ -18,10 +18,7 @@
 
 package com.shemnon.btc.ftm;
 
-import com.shemnon.btc.blockchaininfo.AddressInfo;
-import com.shemnon.btc.blockchaininfo.BlockInfo;
-import com.shemnon.btc.blockchaininfo.CoinInfo;
-import com.shemnon.btc.blockchaininfo.TXInfo;
+import com.shemnon.btc.model.*;
 import com.shemnon.btc.coinbase.CBAddress;
 import com.shemnon.btc.coinbase.CBTransaction;
 import com.shemnon.btc.coinbase.CoinBaseAPI;
@@ -102,13 +99,13 @@ public class FTM {
     @FXML ToggleButton toggleHelp;
     @FXML ToggleButton toggleRightSidebar;
     @FXML ToggleButton toggleSidebar;
-    @FXML TreeView<JsonBase> treeViewEntries;
+    @FXML TreeView<IBase> treeViewEntries;
     @FXML WebView webViewLogin;
 
-    TreeItem<JsonBase> treeRoot = new TreeItem<>(new JsonBaseLabel(""));
-    TreeItem<JsonBase> coinbaseTreeLabel = new TreeItem<>(new JsonBaseLabel("Coinbase Entries"));
-    TreeItem<JsonBase> coinbaseAddresses = new TreeItem<>(new JsonBaseLabel("Addresses"));
-    TreeItem<JsonBase> coinbaseTransactions = new TreeItem<>(new JsonBaseLabel("Transactions"));
+    TreeItem<IBase> treeRoot = new TreeItem<>(new JsonBaseLabel(""));
+    TreeItem<IBase> coinbaseTreeLabel = new TreeItem<>(new JsonBaseLabel("Coinbase Entries"));
+    TreeItem<IBase> coinbaseAddresses = new TreeItem<>(new JsonBaseLabel("Addresses"));
+    TreeItem<IBase> coinbaseTransactions = new TreeItem<>(new JsonBaseLabel("Transactions"));
     CoinBaseOAuth coinBaseAuth;
     CoinBaseAPI coinBaseAPI;
     Duration slideTime = Duration.millis(400);
@@ -117,7 +114,7 @@ public class FTM {
     Timeline tipbarTimeline;
     ExecutorService offThreadExecutor = Executors.newSingleThreadExecutor();
     ObservableList<Future<?>> futures = FXCollections.observableArrayList();
-    ObjectProperty<JsonBase> menuSelectedItem = new SimpleObjectProperty<>(null);
+    ObjectProperty<IBase> menuSelectedItem = new SimpleObjectProperty<>(null);
     MenuItem miExpand = new MenuItem("Expand");
     MenuItem miExpandOutputs = new MenuItem("Expand Outputs");
     MenuItem miExpandAllOutputs = new MenuItem("Expand All Outputs");
@@ -160,21 +157,21 @@ public class FTM {
         String type = choiceType.getValue();
         String hash = textSearch.getText();
         offThread(() -> {
-            JsonBase jd;
+            IBase jd;
             switch (type) {
                 case "Transaction":
-                    jd = TXInfo.query(hash);
+                    jd = ITx.query(hash);
                     break;
                 case "Address":
-                    jd = AddressInfo.query(hash);
+                    jd = IAddress.query(hash);
                     break;
                 case "Block":
-                    jd = BlockInfo.query(hash);
+                    jd = IBlock.query(hash);
                     break;
                 default:
                     return;
             }
-            JsonBase jb = jd;
+            IBase jb = jd;
             expandObject(jb);
             Platform.runLater(() -> {
                 gv.layout();
@@ -185,7 +182,7 @@ public class FTM {
         });
     }
 
-    private void expandBlock(BlockInfo bi) {
+    private void expandBlock(IBlock bi) {
         if (Platform.isFxApplicationThread()) {
             offThread(() -> expandBlock(bi));
         } else {
@@ -193,7 +190,7 @@ public class FTM {
         }
     }
 
-    private void expandTransaction(TXInfo tx) {
+    private void expandTransaction(ITx tx) {
         if (Platform.isFxApplicationThread()) {
             offThread(() -> expandTransaction(tx));
         } else {
@@ -202,16 +199,16 @@ public class FTM {
         }
     }
 
-    private void expandOutputs(TXInfo tx) {
+    private void expandOutputs(ITx tx) {
         //todo check flag to visualize unspent outputs
         tx.getOutputs().forEach(gv::addCoin);
     }
 
-    private void expandInputs(TXInfo tx) {
+    private void expandInputs(ITx tx) {
         tx.getInputs().forEach(gv::addCoin);
     }
 
-    private void expandAddress(AddressInfo ai) {
+    private void expandAddress(IAddress ai) {
         String address = ai.getAddress();
         if (address == null) return;
         
@@ -219,7 +216,7 @@ public class FTM {
             offThread(() -> expandAddress(ai));
         } else {
             ai.getTXs().forEach(tx -> {
-                Consumer<? super CoinInfo> maybeShowCoin = coin ->
+                Consumer<? super ICoin> maybeShowCoin = coin ->
                 {
                     if (address.equals(coin.getAddr())) {
                         gv.addCoin(coin);
@@ -338,7 +335,7 @@ public class FTM {
         } else if (token.isEmpty()) {
             Platform.runLater(() -> {
                 // expand famous transactions
-                TreeItem<JsonBase> famousTransactions = treeViewEntries.getRoot().getChildren().get(1);
+                TreeItem<IBase> famousTransactions = treeViewEntries.getRoot().getChildren().get(1);
                 famousTransactions.getChildren().forEach(ti -> ti.setExpanded(true));
                 famousTransactions.setExpanded(true);
 
@@ -368,12 +365,12 @@ public class FTM {
 
                 //noinspection Convert2Diamond,Convert2MethodRef
                 coinbaseAddresses.getChildren().setAll(addresses.stream()
-                        .map(addr -> new TreeItem<JsonBase>(addr))
+                        .map(addr -> new TreeItem<IBase>(addr))
                         .collect(Collectors.toList())
                 );
                 //noinspection Convert2Diamond,Convert2MethodRef
                 coinbaseTransactions.getChildren().setAll(transactions.stream()
-                        .map(tx -> new TreeItem<JsonBase>(tx))
+                        .map(tx -> new TreeItem<IBase>(tx))
                         .collect(Collectors.toList())
                 );
                 
@@ -387,27 +384,27 @@ public class FTM {
         }
     }
 
-    public void expandObject(JsonBase jbo) {
+    public void expandObject(Object jbo) {
         if (Platform.isFxApplicationThread()) {
             offThread(() -> expandObject(jbo));
         } else {
             // thunk out coinbase to blockchain
-            JsonBase jb = jbo;
+            Object jb = jbo;
             if (jb instanceof CBAddress) {
-                jb = AddressInfo.query(((CBAddress) jb).getAddress());
+                jb = IAddress.query(((CBAddress) jb).getAddress());
             } else if (jb instanceof CBTransaction) {
-                jb = TXInfo.query(((CBTransaction) jb).getHash());
+                jb = ITx.query(((CBTransaction) jb).getHash());
             }
 
             // expand blockchain 
-            if (jb instanceof AddressInfo) {
-                expandAddress((AddressInfo) jb);
-            } else if (jb instanceof TXInfo) {
-                expandTransaction((TXInfo) jb);
-            } else if (jb instanceof BlockInfo) {
-                expandBlock((BlockInfo) jb);
-            } else if (jb instanceof CoinInfo) {
-                gv.addCoin((CoinInfo) jb);
+            if (jb instanceof IAddress) {
+                expandAddress((IAddress) jb);
+            } else if (jb instanceof ITx) {
+                expandTransaction((ITx) jb);
+            } else if (jb instanceof IBlock) {
+                expandBlock((IBlock) jb);
+            } else if (jb instanceof ICoin) {
+                gv.addCoin((ICoin) jb);
             } else {
                 System.out.println("playSound(StandardSounds.SAD_TROMBONE)");
             }
@@ -426,14 +423,14 @@ public class FTM {
 
     private void expandOutputs(ActionEvent event) {
         offThread(() -> {
-            expandOutputs((TXInfo) menuSelectedItem.get());
+            expandOutputs((ITx) menuSelectedItem.get());
             graphNeedsUpdating(true);
         });
     }
 
     private void expandAllOutputs(ActionEvent event) {
         offThread(() -> {
-            for (TXInfo tx : gv.findUnexpandedOutputTX((TXInfo) menuSelectedItem.get())) {
+            for (ITx tx : gv.findUnexpandedOutputTX((ITx) menuSelectedItem.get())) {
                 expandOutputs(tx);
             }
             graphNeedsUpdating(true);
@@ -443,10 +440,10 @@ public class FTM {
     private void expandInputs(ActionEvent event) {
         offThread(() -> {
             Object o = menuSelectedItem.get();
-            if (o instanceof CoinInfo) {
-                gv.addCoin((CoinInfo) o);
-            } else if (o instanceof TXInfo) {
-                expandInputs((TXInfo) o);
+            if (o instanceof ICoin) {
+                gv.addCoin((ICoin) o);
+            } else if (o instanceof ITx) {
+                expandInputs((ITx) o);
             }
             graphNeedsUpdating(true);
         });
@@ -455,12 +452,12 @@ public class FTM {
     private void expandAllInputs(ActionEvent event) {
         offThread(() -> {
             Object o = menuSelectedItem.get();
-            if (o instanceof CoinInfo) {
-                gv.addCoin((CoinInfo)o);
-                o = ((CoinInfo)o).getSourceTX();
+            if (o instanceof ICoin) {
+                gv.addCoin((ICoin)o);
+                o = ((ICoin)o).getSourceTX();
             }
-            if (o instanceof TXInfo) {
-                for (TXInfo tx : gv.findUnexpandedInputTX((TXInfo) o)) {
+            if (o instanceof ITx) {
+                for (ITx tx : gv.findUnexpandedInputTX((ITx) o)) {
                     expandInputs(tx);
                 }
             }
@@ -471,10 +468,10 @@ public class FTM {
     private void removeSelected(ActionEvent event) {
         offThread(() -> {
             Object o = menuSelectedItem.get();
-            if (o instanceof CoinInfo) {
-                gv.removeCoinAsNode((CoinInfo) o);
-            } else if (o instanceof TXInfo) {
-                gv.removeTX((TXInfo) o);
+            if (o instanceof ICoin) {
+                gv.removeCoinAsNode((ICoin) o);
+            } else if (o instanceof ITx) {
+                gv.removeTX((ITx) o);
             }
             graphNeedsUpdating(true);
         });
@@ -492,14 +489,14 @@ public class FTM {
             miRemoveTX.setOnAction(this::removeSelected);
 
             menuSelectedItem.addListener((obv, newN, oldN) -> {
-                if (oldN instanceof TXInfo) {
+                if (oldN instanceof ITx) {
                     miExpand.setDisable(false); // TODO check expanded
                     miExpandOutputs.setDisable(false); // TODO check expanded
                     miExpandAllOutputs.setDisable(false);
                     miExpandInputs.setDisable(false); // TODO check expanded
                     miExpandAllInputs.setDisable(false);
                     miRemoveTX.setDisable(false);
-                } else if (oldN instanceof CoinInfo) {
+                } else if (oldN instanceof ICoin) {
                     miExpand.setDisable(false); // TODO check expanded
                     miExpandOutputs.setDisable(true); 
                     miExpandAllOutputs.setDisable(true);
@@ -541,8 +538,8 @@ public class FTM {
                 if (event.isPopupTrigger() || (event.getButton() == MouseButton.SECONDARY && event.getClickCount() == 1)) {
                     menuSelectedItem.setValue(tx);
                     nodeContextMenu.show(event.getPickResult().getIntersectedNode(), event.getScreenX(), event.getScreenY());
-                } else if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2 && tx instanceof TXInfo) {
-                    expandTransaction((TXInfo) tx);
+                } else if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2 && tx instanceof ITx) {
+                    expandTransaction((ITx) tx);
                     graphNeedsUpdating(true);
                 }
             });
@@ -686,9 +683,10 @@ public class FTM {
     }
 
     private void changeLineSummary(boolean btc, boolean usd, boolean addr) {
-        CoinInfo.setBtcInSummary(btc);
-        CoinInfo.setUsdInSummary(!btc && usd);
-        CoinInfo.setAddrInSummary(!btc && !usd && addr);
+        ICoin.setShowEdgeBTC(btc);
+        ICoin.setShowEdgeUSD(!btc && usd);
+        ICoin.setShowEdgeAddr(!btc && !usd && addr);
+        
         gv.resizeGraphNodes();
         gv.layout();
         gv.rebuildGraph(false);

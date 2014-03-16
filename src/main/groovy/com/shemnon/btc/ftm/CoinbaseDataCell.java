@@ -20,6 +20,7 @@ package com.shemnon.btc.ftm;
 
 import com.shemnon.btc.coinbase.CBAddress;
 import com.shemnon.btc.coinbase.CBTransaction;
+import com.shemnon.btc.model.IBase;
 import javafx.scene.control.Label;
 import javafx.scene.control.TreeCell;
 import javafx.scene.input.MouseEvent;
@@ -34,20 +35,20 @@ import java.util.function.Consumer;
  * 
  * Created by shemnon on 7 Mar 2014.
  */
-public class CoinbaseDataCell extends TreeCell<JsonBase> {
+public class CoinbaseDataCell extends TreeCell<IBase> {
 
-    JsonBase userData; //cringe
+    IBase userData; //cringe
     
     VBox dataCell;
     Label type;
     Label date;
     Label hash;
     
-    Consumer<JsonBase> nodeDoubleClicked;
+    Consumer<IBase> nodeDoubleClicked;
 
     protected static final DateFormat dateFormat =  new SimpleDateFormat("yy-MM-dd HH:mm");
 
-    public CoinbaseDataCell(Consumer<JsonBase> nodeDoubleClicked) {
+    public CoinbaseDataCell(Consumer<IBase> nodeDoubleClicked) {
         this.nodeDoubleClicked = nodeDoubleClicked;
 
         type = new Label();
@@ -70,7 +71,7 @@ public class CoinbaseDataCell extends TreeCell<JsonBase> {
     
 
     @Override
-    protected void updateItem(JsonBase item, boolean empty) {
+    protected void updateItem(IBase item, boolean empty) {
         super.updateItem(item, empty);
         userData = item;
         if (item == null || empty) {
@@ -89,7 +90,7 @@ public class CoinbaseDataCell extends TreeCell<JsonBase> {
             } else {
                 date.setText("Created " + dateFormat.format(address.getCreatedAt()));
             }
-            hash.setText(JsonBase.shortHash(address.getAddress()));
+            hash.setText(IBase.shortHash(address.getAddress()));
             dataCell.getChildren().setAll(type, hash, date);
             setGraphic(dataCell);
         } else if (item instanceof CBTransaction) {
@@ -105,7 +106,7 @@ public class CoinbaseDataCell extends TreeCell<JsonBase> {
                 }
             }
             date.setText(dateFormat.format(trans.getCreatedAt()));
-            hash.setText(JsonBase.shortHash(trans.getHash()));
+            hash.setText(IBase.shortHash(trans.getHash()));
             dataCell.getChildren().setAll(type, hash, date);
             setGraphic(dataCell);
         } else if (item instanceof JsonBaseLabel) {
@@ -114,7 +115,7 @@ public class CoinbaseDataCell extends TreeCell<JsonBase> {
             setGraphic(dataCell);
         } else {
             type.setText(item.getClass().getName());
-            date.setText(item.dumpJson());
+            date.setText(((JsonBase)item).dumpJson());
             hash.setText("-");
             dataCell.getChildren().setAll(type, hash);
             setGraphic(dataCell);

@@ -19,6 +19,8 @@
 package com.shemnon.btc.blockchaininfo
 
 import com.shemnon.btc.ftm.JsonBase
+import com.shemnon.btc.model.IAddress
+import com.shemnon.btc.model.ITx
 import groovy.json.JsonSlurper
 
 import java.util.concurrent.ConcurrentHashMap
@@ -26,9 +28,9 @@ import java.util.concurrent.ConcurrentHashMap
 /**
  * Created by shemnon on 1 Mar 2014.
  */
-class AddressInfo extends JsonBase {
+class AddressInfo extends JsonBase implements IAddress {
 
-    static Map<String, AddressInfo> addrcache = new ConcurrentHashMap<>()
+    static Map<String, IAddress> addrcache = new ConcurrentHashMap<>()
 
     private AddressInfo(def json) {
         jsonSeed = json
@@ -66,7 +68,7 @@ class AddressInfo extends JsonBase {
         addrcache[aj.address] ?: new AddressInfo(aj)
     }
 
-    List<TXInfo> getTXs() {
+    List<ITx> getTXs() {
         return jsonSeed.txs.collect {tx -> 
             return TXInfo.query(tx.hash);
         } 

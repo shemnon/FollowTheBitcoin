@@ -30,18 +30,10 @@ import java.text.SimpleDateFormat
  */
 class JsonBase {
 
-    public static final DateFormat JSON_DATE = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
-    public static final NumberFormat BTC_FORMAT = new DecimalFormat("\u0e3f ###,##0.### ### ###");
-    public static final NumberFormat USD_FORMAT = new DecimalFormat("\$###,###,##0.00");
-    
     def jsonSeed
     
     String toString() {
         return ""
-    }
-    
-    static String shortHash(String hash) {
-        return "${hash[0..6]}...${hash[-4..-1]}"
     }
 
     String dumpJson() {

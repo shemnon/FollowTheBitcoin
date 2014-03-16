@@ -18,11 +18,13 @@
 
 package com.shemnon.btc.ftm
 
+import com.shemnon.btc.model.IBase
+
 /**
  * 
  * Created by shemnon on 8 Mar 2014.
  */
-public class JsonBaseLabel extends JsonBase {
+public class JsonBaseLabel extends JsonBase implements IBase {
 
     public JsonBaseLabel(String label) {
         jsonSeed = ['label': label]

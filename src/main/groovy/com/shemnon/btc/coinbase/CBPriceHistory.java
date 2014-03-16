@@ -21,7 +21,7 @@ package com.shemnon.btc.coinbase;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeMap;
 import com.google.common.collect.TreeRangeMap;
-import com.shemnon.btc.ftm.JsonBase;
+import com.shemnon.btc.model.IBase;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -56,7 +56,7 @@ public class CBPriceHistory {
             while ((line = br.readLine()) != null) {
                 String[] entry = line.split(",");
                 if (entry.length == 2) {
-                    Date date = JsonBase.JSON_DATE.parse(entry[0]);
+                    Date date = IBase.JSON_DATE.parse(entry[0]);
                     double value = Double.parseDouble(entry[1]);
                     priceMap.put(Range.closedOpen(date.getTime(), lastDateQueried), value);
                     lastDateQueried = date.getTime();

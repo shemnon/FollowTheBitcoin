@@ -18,12 +18,13 @@
 
 package com.shemnon.btc.coinbase
 
-import com.shemnon.btc.ftm.JsonBase;
+import com.shemnon.btc.ftm.JsonBase
+import com.shemnon.btc.model.IBase;
 
 /**
  * Created by shemnon on 5 Mar 2014.
  */
-public class CBTransaction extends JsonBase {
+public class CBTransaction extends JsonBase implements IBase {
 
     CBTransaction(def seed) {
         jsonSeed = seed;

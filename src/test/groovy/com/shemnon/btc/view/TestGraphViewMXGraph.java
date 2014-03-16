@@ -20,6 +20,7 @@ package com.shemnon.btc.view;
 
 import com.shemnon.btc.blockchaininfo.OfflineData;
 import com.shemnon.btc.blockchaininfo.TXInfo;
+import com.shemnon.btc.model.ITx;
 import com.sun.javafx.application.PlatformImpl;
 import javafx.application.Platform;
 import javafx.scene.Scene;
@@ -52,13 +53,13 @@ public class TestGraphViewMXGraph {
     
             TXInfo tx42 = TXInfo.query("3a1b9e330d32fef1ee42f8e86420d2be978bbe0dc5862f17da9027cf9e11f8c4");
             gv.addTransaction(tx42);
-            List<TXInfo> moreTXes = new ArrayList<>();
+            List<ITx> moreTXes = new ArrayList<>();
             tx42.getOutputs().forEach(c -> {
                 moreTXes.add(c.getTargetTX());
                 gv.addCoin(c);
             });
             for (int i = 0; i < 5; i++) {
-                List<TXInfo> thisTX = new ArrayList<>(moreTXes);
+                List<ITx> thisTX = new ArrayList<>(moreTXes);
                 moreTXes.clear();
                 thisTX.forEach((t) -> {
                     if (t != null && t.getOutputs() != null) {
