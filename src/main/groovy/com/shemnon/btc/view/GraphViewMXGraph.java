@@ -210,8 +210,6 @@ public class GraphViewMXGraph {
 
     public void rebuildGraph(boolean animate) {
         mxRectangle bounds = mxGraphView.getGraphBounds();
-        double dx = bounds.getX();
-        double dy = bounds.getY();
         LinkedList<Node> newKids = new LinkedList<>();
         List<KeyValue> animations = new ArrayList<>(keyToVertexCell.size());
         List<Node> nodesToDelete = new ArrayList<>();
@@ -257,9 +255,9 @@ public class GraphViewMXGraph {
                             } else {
                                 prevLabel.setText(cellState.getLabel());
                                 animations.add(
-                                        new KeyValue(prevLabel.layoutXProperty(), labelPoint.getX() - dx, Interpolator.EASE_BOTH));
+                                        new KeyValue(prevLabel.layoutXProperty(), labelPoint.getX(), Interpolator.EASE_BOTH));
                                 animations.add(
-                                        new KeyValue(prevLabel.layoutYProperty(), labelPoint.getY() - dy, Interpolator.EASE_BOTH)
+                                        new KeyValue(prevLabel.layoutYProperty(), labelPoint.getY(), Interpolator.EASE_BOTH)
                                 );
                             }
                             keyToEdgeLabel.put(key, prevLabel);
@@ -323,15 +321,15 @@ public class GraphViewMXGraph {
                         Node node = getFXNodeForVertexCell(cell.getValue());
 
                         if (setInitialValue || (node.getLayoutX() == 0 && node.getLayoutY() == 0)) {
-                            node.setLayoutX(geom.getX() - dx);
-                            node.setLayoutY(geom.getY() - dy);
+                            node.setLayoutX(geom.getX());
+                            node.setLayoutY(geom.getY());
                             node.setOpacity(0);
                             animations.add(new KeyValue(node.opacityProperty(), 1.0, Interpolator.EASE_IN));
                         } else {
                             animations.add(
-                                    new KeyValue(node.layoutXProperty(), geom.getX() - dx, Interpolator.EASE_BOTH));
+                                    new KeyValue(node.layoutXProperty(), geom.getX(), Interpolator.EASE_BOTH));
                             animations.add(
-                                    new KeyValue(node.layoutYProperty(), geom.getY() - dy, Interpolator.EASE_BOTH)
+                                    new KeyValue(node.layoutYProperty(), geom.getY(), Interpolator.EASE_BOTH)
                             );
                         }
                         
