@@ -1,5 +1,7 @@
 package com.shemnon.btc.model;
 
+import javafx.application.Platform;
+
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -24,5 +26,11 @@ public interface IBase {
             return hash;
         }
     }
-
+    
+    static void checkOffThread() {
+        if (Platform.isFxApplicationThread()) {
+            new RuntimeException("Network Query on Thread").printStackTrace();
+        }
+    }
+    
 }

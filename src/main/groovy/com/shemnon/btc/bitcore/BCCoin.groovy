@@ -16,11 +16,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
-package com.shemnon.btc.blockchaininfo
+package com.shemnon.btc.bitcore
 
 import com.shemnon.btc.coinbase.CBPriceHistory
-import com.shemnon.btc.ftm.JsonBase
 import com.shemnon.btc.model.ICoin
+import com.shemnon.btc.model.ITx
 
 import java.util.concurrent.ConcurrentHashMap
 
@@ -28,72 +28,81 @@ import java.util.concurrent.ConcurrentHashMap
  * There is no such thing as a coin, this is an abstraction of tx input/output
  * Created by shemnon on 2 Mar 2014.
  */
-class CoinInfo extends JsonBase implements ICoin {
+class BCCoin extends BitcoreBase implements ICoin {
     
-    static Map<String, CoinInfo> coincache = new ConcurrentHashMap()
+    static Map<String, BCCoin> coincache = new ConcurrentHashMap()
     
     String compkey
-    boolean toAddrChecked = false
-    def targetTX
     
-    private CoinInfo(def seed) {
-        jsonSeed = seed
-        compkey = coinKey(seed)
-        coincache[compkey] = this
+    String sourceTxID
+    String spendTxID
+    String sourceN
+    String addr
+    double value
+    
+    private BCCoin() {
     }
 
-    public static String coinKey(seed) {
-        "$seed.tx_index#$seed.n"
+    public static String coinKey(def seed) {
+        "$seed.tx#$seed.n"
     }
 
-    static CoinInfo query(String coinKey) {
+    static BCCoin query(String coinKey) {
         if (!coincache.containsKey(coinKey)) {
-            TXInfo.query(coinKey.tx_index)
-            // rely on pre-cacheing to fill the result
+            checkOffThread()
+            BCTx.query(coinKey.split('#')[0])
         }
         return coincache[coinKey]
     }
 
-    static CoinInfo preCache(def j, TXInfo newSpendTX = null) {
-        CoinInfo ci = coincache[coinKey(j)] ?: new CoinInfo(j)
-        if (newSpendTX) {
-            ci.targetTX = newSpendTX
-            ci.toAddrChecked = true
+    static BCCoin cacheInput(def j, def spendTxID) {
+        BCCoin ci = coincache["$j.txid#$j.vout"]
+        if (ci == null) {
+            ci = new BCCoin()
+            ci.sourceTxID = j.txid
+            ci.spendTxID = spendTxID
+            ci.sourceN = j.vout
+            ci.addr = j.addr
+            ci.value = j.value
+            ci.compkey = "$j.txid#$j.vout"
+            coincache[ci.compkey] = ci
         }
-        return ci
+        return ci;
     }
     
-    public String getAddr() {
-        return jsonSeed.addr
+    static BCCoin cacheOutput(def j, def sourceTxID) {
+        BCCoin ci = coincache["$sourceTxID#$j.n"]
+        if (ci == null) {
+            ci = new BCCoin()
+            ci.sourceTxID = sourceTxID
+            ci.spendTxID = j.spentTxId
+            ci.sourceN = j.n
+            ci.addr = j.scriptPubKey.addresses[0]
+            ci.value = j.value
+            ci.compkey = "$sourceTxID#$j.n"
+            coincache[ci.compkey] = ci
+        }
+        return ci;
     }
     
-    public double getValue() {
-        return jsonSeed.value.longValue() / 100000000.0
-    }
-
     public long getValueSatoshi() {
-        return jsonSeed.value.longValue()
+        return value * 100000000
     }
     
     public double getValueUSD() {
         CBPriceHistory.instance.getPrice(sourceTX.timeMs).orElse(0.0) * value
     }
     
-    public TXInfo getSourceTX() {
-         return TXInfo.query(jsonSeed.tx_index)
+    public ITx getSourceTX() {
+         return BCTx.query(sourceTxID)
     }
     
-    public TXInfo getTargetTX() {
-        if (!toAddrChecked) {
-            AddressInfo addr = AddressInfo.query(addr)
-            targetTX = addr.TXs.find { tx -> tx.inputs.find {coin -> coin.compkey == compkey } }
-            toAddrChecked = true
-        }
-        return targetTX
+    public ITx getTargetTX() {
+        BCTx.query(spendTxID)
     }
     
     public boolean isSpent() {
-        return targetTX
+        spendTxID
     }
     
     public String toString() {

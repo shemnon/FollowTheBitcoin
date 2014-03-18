@@ -16,61 +16,53 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
-package com.shemnon.btc.blockchaininfo
+package com.shemnon.btc.bitcore
 
 import com.shemnon.btc.ftm.JsonBase
 import com.shemnon.btc.model.IBlock
 import com.shemnon.btc.model.ITx
 import groovy.json.JsonSlurper
 
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Created by shemnon on 1 Mar 2014.
  */
-public class BlockInfo extends JsonBase implements IBlock {
+public class BCBlock extends BitcoreBase implements IBlock {
 
     static Map<String, IBlock> blockcache = new ConcurrentHashMap<>()
 
-    private BlockInfo(def json) {
+    private BCBlock(def json) {
         jsonSeed = json
         blockcache[jsonSeed.hash] = this
-        blockcache[jsonSeed.block_index] = this
+        blockcache[jsonSeed.height] = this
     }
     
-    static BlockInfo query(String blockid) {
-        BlockInfo bi = blockcache[blockid]
+    static BCBlock query(String blockid) {
+        BCBlock bi = blockcache[blockid]
         if (bi == null) {
-            if (blockid.length() == 64) {
-                URL tx = new URL("http://blockchain.info/rawblock/$blockid")
-                def slurper = new JsonSlurper()
-                bi = new BlockInfo(slurper.parseText(tx.text))
-            } else {
-                URL tx = new URL("http://blockchain.info/block-height/$blockid?format=json")
-                def slurper = new JsonSlurper()
-                bi = new BlockInfo(slurper.parseText(tx.text).blocks[0])
-            }                 
-            
-            TXInfo.preCache(bi.jsonSeed.txs)
+            checkOffThread()
+            bi = new BCBlock(new JsonSlurper().parseText(
+                    new URL("$urlbase/block/$blockid").text));
         }
         return bi
     }
 
-    static BlockInfo fromJson(String jsonString) {
+    static BCBlock fromJson(String jsonString) {
         Map bk = new JsonSlurper().parseText(jsonString)
         fromJson(bk)
     }
 
-    static BlockInfo fromJson(Map bk) {
-        blockcache[bk.hash] ?: new BlockInfo(bk)
+    static BCBlock fromJson(Map bk) {
+        blockcache[bk.hash] ?: new BCBlock(bk)
     }
 
     List<ITx> getTXs() {
-        return jsonSeed.tx.collect {tx -> TXInfo.query(tx.hash) }
+        return jsonSeed.tx.collect {tx -> BCTx.query(tx) }
     }
     
     int getHeight() {
-        return jsonSeed.block_index
+        return jsonSeed.height
     }
 
 }

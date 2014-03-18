@@ -704,7 +704,6 @@ public class FTM {
         if (!coinBaseAuth.checkTokens(false, false)) return;  // requires login to create button
         
         String tip = coinBaseAuth.loadToken("tip");
-        System.out.println(tip);
         if (tip != null && !tip.isEmpty()) {
             tipPanel.getChildren().remove(tipButton);
             tipLabel.setText("CryptoCrumb thanks you for your tip of " + tip);
@@ -743,11 +742,6 @@ public class FTM {
     
     public void tip(ActionEvent actionEvent) {
         String tip = coinBaseAuth.loadToken("tip");
-        System.out.println(tip);
-        
-        tip = coinBaseAuth.loadToken("tip");
-        System.out.println(tip);
-        System.out.println(actionEvent);
         
         final String s;
         Object source = actionEvent.getSource();

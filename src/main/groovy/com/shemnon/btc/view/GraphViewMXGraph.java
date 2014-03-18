@@ -126,6 +126,7 @@ public class GraphViewMXGraph {
             }
             return o;
         } catch (Exception e) {
+            e.printStackTrace();
             System.out.println(((JsonBase)coin).dumpJson());
             throw e;
         }
