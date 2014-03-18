@@ -202,10 +202,12 @@ public class FTM {
     private void expandOutputs(ITx tx) {
         //todo check flag to visualize unspent outputs
         tx.getOutputs().forEach(gv::addCoin);
+        gv.updateExpanded();
     }
 
     private void expandInputs(ITx tx) {
         tx.getInputs().forEach(gv::addCoin);
+        gv.updateExpanded();
     }
 
     private void expandAddress(IAddress ai) {
@@ -225,6 +227,7 @@ public class FTM {
                 tx.getInputs().forEach(maybeShowCoin);
                 tx.getOutputs().forEach(maybeShowCoin);
             });
+            gv.updateExpanded();
         }
     }
 
@@ -405,6 +408,7 @@ public class FTM {
                 expandBlock((IBlock) jb);
             } else if (jb instanceof ICoin) {
                 gv.addCoin((ICoin) jb);
+                gv.updateExpanded();
             } else {
                 System.out.println("playSound(StandardSounds.SAD_TROMBONE)");
             }
@@ -433,6 +437,7 @@ public class FTM {
             for (ITx tx : gv.findUnexpandedOutputTX((ITx) menuSelectedItem.get())) {
                 expandOutputs(tx);
             }
+            gv.updateExpanded();
             graphNeedsUpdating(true);
         });
     }
@@ -445,6 +450,7 @@ public class FTM {
             } else if (o instanceof ITx) {
                 expandInputs((ITx) o);
             }
+            gv.updateExpanded();
             graphNeedsUpdating(true);
         });
     }
@@ -461,6 +467,7 @@ public class FTM {
                     expandInputs(tx);
                 }
             }
+            gv.updateExpanded();
             graphNeedsUpdating(true);
         });
     }
@@ -473,6 +480,7 @@ public class FTM {
             } else if (o instanceof ITx) {
                 gv.removeTX((ITx) o);
             }
+            gv.updateExpanded();
             graphNeedsUpdating(true);
         });
     }
@@ -701,8 +709,6 @@ public class FTM {
 
 
     private void showTipBar() {
-        if (!coinBaseAuth.checkTokens(false, false)) return;  // requires login to create button
-        
         String tip = coinBaseAuth.loadToken("tip");
         if (tip != null && !tip.isEmpty()) {
             tipPanel.getChildren().remove(tipButton);

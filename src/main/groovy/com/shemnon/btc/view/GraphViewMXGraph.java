@@ -149,26 +149,47 @@ public class GraphViewMXGraph {
 
             o = mxGraph.insertEdge(mxGraph.getDefaultParent(), key, ci, from, to);
             keyToEdgeCell.put(key, o);
-            updateExpanded(fromTX);
-            updateExpanded(toTX);
         }
         return o;
     }
 
+    public void updateExpanded() {
+        keyToVertexCell.values().forEach(cell -> {
+            Object v = ((mxCell)cell).getValue();
+            if (v instanceof ITx) {
+                updateExpanded((ITx) v);
+            }
+        });
+    }
+    
     private void updateExpanded(ITx tx) {
         if (tx == null) return;
         
         Node n = keyToVertexNode.get(tx.getHash());
         if (n == null) return;
 
-        boolean inputsExpanded = tx.getInputs().stream().allMatch(ci -> keyToVertexNode.containsKey(ci.getSourceTX().getHash()));
+        boolean inputsExpanded = tx.getInputs().stream().allMatch(ci -> {
+            boolean exists = keyToVertexNode.containsKey(ci.getSourceTX().getHash());
+            if (exists && !keyToEdgeNode.containsKey(ci.getCompkey())) {
+                addCoin(ci);
+            }
+            return exists;
+        });
 
         boolean outputsExpanded = tx.getOutputs().stream().allMatch(ci -> {
             ITx target = ci.getTargetTX();
             if (target == null) {
-                return keyToVertexNode.containsKey(ci.getCompkey());
+                boolean exists = keyToVertexNode.containsKey(ci.getCompkey());
+                if (exists && !keyToEdgeNode.containsKey(ci.getCompkey())) {
+                    addCoin(ci);
+                }
+                return exists;
             } else {
-                return keyToVertexNode.containsKey(target.getHash());
+                boolean exists = keyToVertexNode.containsKey(target.getHash());
+                if (exists && !keyToEdgeNode.containsKey(ci.getCompkey())) {
+                    addCoin(ci);
+                }
+                return exists;
             }
         });
 
@@ -381,7 +402,6 @@ public class GraphViewMXGraph {
             fillUnspentOutput(coin, box);
            
             keyToVertexNode.put(coin.getCompkey(), box);
-            updateExpanded(coin.getSourceTX());
             
             return box;
         }
@@ -438,7 +458,6 @@ public class GraphViewMXGraph {
             //box.setCacheHint(CacheHint.QUALITY);
             
             keyToVertexNode.put(tx.getHash(), box);
-            updateExpanded(tx);
             
             return box;
         }
