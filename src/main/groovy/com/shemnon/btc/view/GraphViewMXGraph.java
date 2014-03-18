@@ -471,13 +471,19 @@ public class GraphViewMXGraph {
             box.getChildren().add(new Text(IBase.BTC_FORMAT.format(tx.getInputValue())));
         }
         if (showTxUSD.get()) {
-            box.getChildren().add(new Text(IBase.USD_FORMAT.format(tx.getInputValueUSD())));
+            if (tx.isConfirmed()) {
+                box.getChildren().add(new Text(IBase.USD_FORMAT.format(tx.getInputValueUSD())));
+            } else {
+                //TODO add spot prince to CBAPI
+                box.getChildren().add(new Text(" ?? "));
+            }
         }
         if (showTxDate.get()) {
             box.getChildren().add(new Text(tx.getTimeString()));
         }
         if (showTxHeight.get()) {
-            box.getChildren().add(new Text("Block# " + tx.getBlockHeight()));
+            int height = tx.getBlockHeight();
+            box.getChildren().add(new Text((height < 0) ? "Unconfirmed" : ("Block # " + tx.getBlockHeight())));
         }
         if (showTxCoinCount.get()) {
             box.getChildren().add(new Text(tx.getInputs().size() + " in " + tx.getOutputs().size() + " out " + tx.getUnspentCoins().size() + " unspent"));

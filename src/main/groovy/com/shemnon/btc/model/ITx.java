@@ -40,4 +40,6 @@ public interface ITx extends IBase {
     long getInputValueSatoshi();
 
     long getOutputValueSatoshi();
+
+    boolean isConfirmed();
 }

@@ -146,6 +146,10 @@ public class TXInfo extends JsonBase implements ITx {
         jsonSeed.hash
     }
     
+    public boolean isConfirmed() {
+        return jsonSeed.block_height
+    }
+    
     public int getBlockHeight() {
         try {
             jsonSeed.block_height

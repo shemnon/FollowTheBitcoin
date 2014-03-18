@@ -118,8 +118,16 @@ public class BCTx extends BitcoreBase implements ITx {
         CBPriceHistory.instance.getPrice(timeMs).orElse(0.0) * feePaid
     }
     
+    boolean isConfirmed() {
+        return jsonSeed.blockhash
+    }
+    
     IBlock getBlock() {
-        BCBlock.query(jsonSeed.blockhash)
+        if (jsonSeed.blockhash) {
+            BCBlock.query(jsonSeed.blockhash)
+        } else {
+            return null;
+        }
     }
 
     public String getHash() {
@@ -127,7 +135,7 @@ public class BCTx extends BitcoreBase implements ITx {
     }
     
     public int getBlockHeight() {
-        block.height
+        block ? block.height : -1
     }
     
     public List<ICoin> getCoins() {

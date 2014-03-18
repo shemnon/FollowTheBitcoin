@@ -19,8 +19,10 @@
 package com.shemnon.btc.bitcore
 
 import com.shemnon.btc.coinbase.CBPriceHistory
+import com.shemnon.btc.model.IBase
 import com.shemnon.btc.model.ICoin
 import com.shemnon.btc.model.ITx
+import javafx.scene.text.Text
 
 import java.util.concurrent.ConcurrentHashMap
 
@@ -90,7 +92,12 @@ class BCCoin extends BitcoreBase implements ICoin {
     }
     
     public double getValueUSD() {
-        CBPriceHistory.instance.getPrice(sourceTX.timeMs).orElse(0.0) * value
+        if (tx.isConfirmed()) {
+            CBPriceHistory.instance.getPrice(sourceTX.timeMs).orElse(0.0) * value
+        } else {
+            //TODO add spot prince to CBAPI
+            box.getChildren().add(new Text(" ?? "));
+        }
     }
     
     public ITx getSourceTX() {
