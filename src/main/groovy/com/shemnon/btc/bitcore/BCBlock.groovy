@@ -31,7 +31,7 @@ import java.util.concurrent.ConcurrentHashMap
 public class BCBlock extends BitcoreBase implements IBlock {
 
     static Map<String, IBlock> blockcache = new ConcurrentHashMap<>()
-
+    
     private BCBlock(def json) {
         jsonSeed = json
         blockcache[jsonSeed.hash] = this
@@ -64,5 +64,24 @@ public class BCBlock extends BitcoreBase implements IBlock {
     int getHeight() {
         return jsonSeed.height
     }
+    
+    String getHash() {
+        return jsonSeed.hash
+    }
 
+    boolean equals(o) {
+        if (o == null) return false;
+        if (this.is(o)) return true
+        if (getClass() != o.class) return false
+
+        BCBlock bcBlock = (BCBlock) o
+
+        if (hash != bcBlock.hash) return false
+
+        return true
+    }
+
+    int hashCode() {
+        return (hash != null ? hash.hashCode() : 0)
+    }
 }

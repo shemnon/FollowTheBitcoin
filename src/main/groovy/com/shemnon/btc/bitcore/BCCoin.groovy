@@ -65,7 +65,11 @@ class BCCoin extends BitcoreBase implements ICoin {
             ci.spendTxID = spendTxID
             ci.sourceN = j.vout
             ci.addr = j.addr
-            ci.value = j.value
+            try {
+                ci.value = j.value
+            } catch (IllegalArgumentException iae) {
+                println j
+            }
             ci.compkey = "$j.txid#$j.vout"
             coincache[ci.compkey] = ci
         }
@@ -80,7 +84,11 @@ class BCCoin extends BitcoreBase implements ICoin {
             ci.spendTxID = j.spentTxId
             ci.sourceN = j.n
             ci.addr = j.scriptPubKey.addresses[0]
-            ci.value = j.value
+            try {
+                ci.value = j.value
+            } catch (IllegalArgumentException iae) {
+                println j
+            }
             ci.compkey = "$sourceTxID#$j.n"
             coincache[ci.compkey] = ci
         }
@@ -92,7 +100,7 @@ class BCCoin extends BitcoreBase implements ICoin {
     }
     
     public double getValueUSD() {
-        if (tx.isConfirmed()) {
+        if (sourceTX.isConfirmed()) {
             CBPriceHistory.instance.getPrice(sourceTX.timeMs).orElse(0.0) * value
         } else {
             //TODO add spot prince to CBAPI
@@ -124,4 +132,19 @@ class BCCoin extends BitcoreBase implements ICoin {
         }
     }
 
+    boolean equals(o) {
+        if (o == null) return false;
+        if (this.is(o)) return true
+        if (getClass() != o.class) return false
+
+        BCCoin bcCoin = (BCCoin) o
+
+        if (compkey != bcCoin.compkey) return false
+
+        return true
+    }
+
+    int hashCode() {
+        return (compkey != null ? compkey.hashCode() : 0)
+    }
 }

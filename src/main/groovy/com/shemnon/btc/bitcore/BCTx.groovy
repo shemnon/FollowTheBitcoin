@@ -158,4 +158,20 @@ public class BCTx extends BitcoreBase implements ITx {
             return "?";
         }
     }
+
+    boolean equals(o) {
+        if (o == null) return false;
+        if (this.is(o)) return true
+        if (getClass() != o.class) return false
+
+        BCTx bcTx = (BCTx) o
+
+        if (hash != bcTx.hash) return false
+
+        return true
+    }
+
+    int hashCode() {
+        return (hash != null ? hash.hashCode() : 0)
+    }
 }

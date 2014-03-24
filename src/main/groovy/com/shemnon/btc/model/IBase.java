@@ -27,7 +27,7 @@ public interface IBase {
         }
     }
     
-    static void checkOffThread() {
+    public static void checkOffThread() {
         if (Platform.isFxApplicationThread()) {
             new RuntimeException("Network Query on Thread").printStackTrace();
         }

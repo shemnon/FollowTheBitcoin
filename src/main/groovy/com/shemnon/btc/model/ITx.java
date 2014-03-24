@@ -36,6 +36,8 @@ public interface ITx extends IBase {
     List<ICoin> getUnspentCoins();
 
     double getOutputValue();
+   
+    double getOutputValueUSD();
 
     long getInputValueSatoshi();
 

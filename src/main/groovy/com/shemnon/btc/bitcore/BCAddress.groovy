@@ -76,4 +76,19 @@ class BCAddress extends BitcoreBase implements IAddress {
         jsonSeed.addrStr
     }
     
+    boolean equals(o) {
+        if (o == null) return false;
+        if (this.is(o)) return true
+        if (getClass() != o.class) return false
+
+        BCAddress bcAddress = (BCAddress) o
+
+        if (address != bcAddress.address) return false
+
+        return true
+    }
+
+    int hashCode() {
+        return (address != null ? address.hashCode() : 0)
+    }
 }

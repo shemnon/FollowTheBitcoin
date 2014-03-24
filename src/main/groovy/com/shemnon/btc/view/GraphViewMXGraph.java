@@ -49,6 +49,7 @@ import javafx.util.Duration;
 import javax.swing.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.function.BiConsumer;
 
 /**
@@ -84,7 +85,8 @@ public class GraphViewMXGraph {
     BooleanProperty showCoinNodeBitcoin = new SimpleBooleanProperty(true);
     BooleanProperty showCoinNodeUSD = new SimpleBooleanProperty(true);
     
-    Timeline animatingTimeline;
+    //Timeline animatingTimeline;
+    SequentialTransition playlist;
 
     public GraphViewMXGraph(BiConsumer<MouseEvent, IBase> clickHandler) {
         this.clickHandler = clickHandler;
@@ -96,6 +98,11 @@ public class GraphViewMXGraph {
         mxGraphLayout = new mxHierarchicalLayout(mxGraph, SwingConstants.NORTH);
         
         graphPane = new Pane();
+        
+        playlist = new SequentialTransition();
+        playlist.setOnFinished(event -> {
+            playlist.getChildren().clear();
+        });
     }
 
     public Object addTransaction(ITx tx) {
@@ -230,13 +237,9 @@ public class GraphViewMXGraph {
     public void rebuildGraph(boolean animate) {
         mxRectangle bounds = mxGraphView.getGraphBounds();
         LinkedList<Node> newKids = new LinkedList<>();
-        List<KeyValue> animations = new ArrayList<>(keyToVertexCell.size());
+        Set<KeyValue> animations = new CopyOnWriteArraySet<>();
         List<Node> nodesToDelete = new ArrayList<>();
 
-        if (animatingTimeline != null && animatingTimeline.getStatus() == Animation.Status.RUNNING) {
-            animatingTimeline.jumpTo(animatingTimeline.getTotalDuration().subtract(Duration.ONE));
-        }
-        
         mxGraphView.getStates().entrySet().forEach(
                 entry -> {
                     mxCell cell = (mxCell) entry.getKey();
@@ -361,8 +364,12 @@ public class GraphViewMXGraph {
                 "move",
                 finishedEvent -> { graphPane.getChildren().removeAll(nodesToDelete); },
                 animations));
-        t.play();
-        animatingTimeline = t;
+        
+        playlist.stop();
+        Duration d = playlist.getCurrentTime();
+        playlist.getChildren().add(t);
+        playlist.playFrom(d);
+        
     }
 
     private Node getFXNodeForVertexCell(Object value) {
@@ -468,11 +475,11 @@ public class GraphViewMXGraph {
             box.getChildren().add(new Text(IBase.shortHash(tx.getHash())));
         }
         if (showTxBitcoin.get()) {
-            box.getChildren().add(new Text(IBase.BTC_FORMAT.format(tx.getInputValue())));
+            box.getChildren().add(new Text(IBase.BTC_FORMAT.format(tx.getOutputValue())));
         }
         if (showTxUSD.get()) {
             if (tx.isConfirmed()) {
-                box.getChildren().add(new Text(IBase.USD_FORMAT.format(tx.getInputValueUSD())));
+                box.getChildren().add(new Text(IBase.USD_FORMAT.format(tx.getOutputValueUSD())));
             } else {
                 //TODO add spot prince to CBAPI
                 box.getChildren().add(new Text(" ?? "));

@@ -18,6 +18,8 @@
 
 package com.shemnon.btc.ftm;
 
+import com.shemnon.btc.analysis.Pyramid;
+import com.shemnon.btc.analysis.SpendAndChange;
 import com.shemnon.btc.model.*;
 import com.shemnon.btc.coinbase.CBAddress;
 import com.shemnon.btc.coinbase.CBTransaction;
@@ -120,6 +122,10 @@ public class FTM {
     MenuItem miExpandAllOutputs = new MenuItem("Expand All Outputs");
     MenuItem miExpandInputs = new MenuItem("Expand Inputs");
     MenuItem miExpandAllInputs = new MenuItem("Expand All Inputs");
+    MenuItem miClimbPyramid = new MenuItem("Climb Pyramid");
+    MenuItem miDescendPyramid = new MenuItem("Descend Pyramid");
+    MenuItem miClimbSNC = new MenuItem("Climb Spend and Change");
+    MenuItem miDescendSNC = new MenuItem("Descend Spend and Change");
     MenuItem miRemoveTX = new MenuItem("Remove Transaction");
     ContextMenu nodeContextMenu = new ContextMenu(
             miExpand,
@@ -129,6 +135,12 @@ public class FTM {
             new SeparatorMenuItem(),
             miExpandInputs,
             miExpandAllInputs,
+            new SeparatorMenuItem(),
+            miClimbPyramid,
+            miDescendPyramid,
+            new SeparatorMenuItem(),
+            miClimbSNC,
+            miDescendSNC,
             new SeparatorMenuItem(),
             miRemoveTX
     );
@@ -140,7 +152,7 @@ public class FTM {
         futures.add(f);
         Timeline t = new Timeline(new KeyFrame(Duration.millis(100),
                 event -> {
-                    futures.removeIf(it -> it.isDone());
+                    futures.removeIf(Future::isDone);
                     if (futures.isEmpty()) {
                         labelProgressBacklog.setText("");
                     } else {
@@ -472,6 +484,58 @@ public class FTM {
         });
     }
 
+    private void climbPyramid(ActionEvent event) {
+        offThread(() -> {
+            Object o = menuSelectedItem.get();
+            if (o instanceof ITx) {
+                for (ITx tx : Pyramid.climbPyramid((ITx) o, 20)) {
+                    expandInputs(tx);
+                }
+            }
+            gv.updateExpanded();
+            graphNeedsUpdating(true);
+        });
+    }
+
+    private void descendPyramid(ActionEvent event) {
+        offThread(() -> {
+            Object o = menuSelectedItem.get();
+            if (o instanceof ITx) {
+                for (ITx tx : Pyramid.descendPyramid((ITx) o, 4)) {
+                    expandOutputs(tx);
+                }
+            }
+            gv.updateExpanded();
+            graphNeedsUpdating(true);
+        });
+    }
+
+    private void climbSNC(ActionEvent event) {
+        offThread(() -> {
+            Object o = menuSelectedItem.get();
+            if (o instanceof ITx) {
+                for (ITx tx : SpendAndChange.climbSpendAndChange((ITx) o, 20)) {
+                    expandTransaction(tx);
+                }
+            }
+            gv.updateExpanded();
+            graphNeedsUpdating(true);
+        });
+    }
+
+    private void descendSND(ActionEvent event) {
+        offThread(() -> {
+            Object o = menuSelectedItem.get();
+            if (o instanceof ITx) {
+                for (ITx tx : SpendAndChange.descendSpendAndChange((ITx) o, 20)) {
+                    expandTransaction(tx);
+                }
+            }
+            gv.updateExpanded();
+            graphNeedsUpdating(true);
+        });
+    }
+
     private void removeSelected(ActionEvent event) {
         offThread(() -> {
             Object o = menuSelectedItem.get();
@@ -494,6 +558,10 @@ public class FTM {
             miExpandAllOutputs.setOnAction(this::expandAllOutputs);
             miExpandInputs.setOnAction(this::expandInputs);
             miExpandAllInputs.setOnAction(this::expandAllInputs);
+            miClimbPyramid.setOnAction(this::climbPyramid);
+            miDescendPyramid.setOnAction(this::descendPyramid);
+            miClimbSNC.setOnAction(this::climbSNC);
+            miDescendSNC.setOnAction(this::descendSND);
             miRemoveTX.setOnAction(this::removeSelected);
 
             menuSelectedItem.addListener((obv, newN, oldN) -> {
@@ -503,6 +571,10 @@ public class FTM {
                     miExpandAllOutputs.setDisable(false);
                     miExpandInputs.setDisable(false); // TODO check expanded
                     miExpandAllInputs.setDisable(false);
+                    miClimbPyramid.setDisable(false);
+                    miDescendPyramid.setDisable(false);
+                    miClimbSNC.setDisable(false);
+                    miDescendSNC.setDisable(false);
                     miRemoveTX.setDisable(false);
                 } else if (oldN instanceof ICoin) {
                     miExpand.setDisable(false); // TODO check expanded
@@ -510,6 +582,10 @@ public class FTM {
                     miExpandAllOutputs.setDisable(true);
                     miExpandInputs.setDisable(true); 
                     miExpandAllInputs.setDisable(false);
+                    miClimbPyramid.setDisable(true); //FIXME this can be done
+                    miDescendPyramid.setDisable(true);
+                    miClimbSNC.setDisable(true); //FIXME this can be done
+                    miDescendSNC.setDisable(true);
                     miRemoveTX.setDisable(false);
                 } else {
                     miExpand.setDisable(true);
@@ -517,6 +593,10 @@ public class FTM {
                     miExpandAllOutputs.setDisable(true);
                     miExpandInputs.setDisable(true);
                     miExpandAllInputs.setDisable(true);
+                    miClimbPyramid.setDisable(true);
+                    miDescendPyramid.setDisable(true);
+                    miClimbSNC.setDisable(true);
+                    miDescendSNC.setDisable(true);
                     miRemoveTX.setDisable(true);
                 }
             });
