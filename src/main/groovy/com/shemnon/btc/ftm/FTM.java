@@ -148,7 +148,14 @@ public class FTM {
     private ZoomPane zp;
 
     public void offThread(Runnable r) {
-        Future<?> f = offThreadExecutor.submit(r);
+        Future<?> f = offThreadExecutor.submit(() -> {
+            try {
+                r.run();
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw e;
+            }
+        });
         futures.add(f);
         Timeline t = new Timeline(new KeyFrame(Duration.millis(100),
                 event -> {

@@ -85,8 +85,7 @@ public class GraphViewMXGraph {
     BooleanProperty showCoinNodeBitcoin = new SimpleBooleanProperty(true);
     BooleanProperty showCoinNodeUSD = new SimpleBooleanProperty(true);
     
-    //Timeline animatingTimeline;
-    SequentialTransition playlist;
+    Timeline animatingTimeline;
 
     public GraphViewMXGraph(BiConsumer<MouseEvent, IBase> clickHandler) {
         this.clickHandler = clickHandler;
@@ -98,11 +97,6 @@ public class GraphViewMXGraph {
         mxGraphLayout = new mxHierarchicalLayout(mxGraph, SwingConstants.NORTH);
         
         graphPane = new Pane();
-        
-        playlist = new SequentialTransition();
-        playlist.setOnFinished(event -> {
-            playlist.getChildren().clear();
-        });
     }
 
     public Object addTransaction(ITx tx) {
@@ -140,24 +134,29 @@ public class GraphViewMXGraph {
     }
 
     public Object addCoin(ICoin ci) {
-        String key = ci.getCompkey();
-        Object o = keyToEdgeCell.get(key);
-        if ((o == null || !mxGraphModel.isEdge(o)) && ci.getSourceTX() != null) {
-            ITx fromTX = ci.getSourceTX();
-            ITx toTX = ci.getTargetTX();
-            
-            Object from = addTransaction(fromTX);
-            Object to;
-            if (toTX == null) {
-                to = addCoinAsNode(ci);
-            } else {
-                to = addTransaction(toTX);
-            }
+        try {
+            String key = ci.getCompkey();
+            Object o = keyToEdgeCell.get(key);
+            if ((o == null || !mxGraphModel.isEdge(o)) && ci.getSourceTXID() != null) {
+                ITx fromTX = ci.getSourceTX();
+                ITx toTX = ci.getTargetTX();
 
-            o = mxGraph.insertEdge(mxGraph.getDefaultParent(), key, ci, from, to);
-            keyToEdgeCell.put(key, o);
+                Object from = addTransaction(fromTX);
+                Object to;
+                if (toTX == null) {
+                    to = addCoinAsNode(ci);
+                } else {
+                    to = addTransaction(toTX);
+                }
+
+                o = mxGraph.insertEdge(mxGraph.getDefaultParent(), key, ci, from, to);
+                keyToEdgeCell.put(key, o);
+            }
+            return o;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
         }
-        return o;
     }
 
     public void updateExpanded() {
@@ -176,7 +175,8 @@ public class GraphViewMXGraph {
         if (n == null) return;
 
         boolean inputsExpanded = tx.getInputs().stream().allMatch(ci -> {
-            boolean exists = keyToVertexNode.containsKey(ci.getSourceTX().getHash());
+            String srcTXID = ci.getSourceTXID();
+            boolean exists = srcTXID != null && keyToVertexNode.containsKey(srcTXID);
             if (exists && !keyToEdgeNode.containsKey(ci.getCompkey())) {
                 addCoin(ci);
             }
@@ -184,15 +184,15 @@ public class GraphViewMXGraph {
         });
 
         boolean outputsExpanded = tx.getOutputs().stream().allMatch(ci -> {
-            ITx target = ci.getTargetTX();
-            if (target == null) {
+            String targetTXID = ci.getTargetTXID();
+            if (targetTXID == null) {
                 boolean exists = keyToVertexNode.containsKey(ci.getCompkey());
                 if (exists && !keyToEdgeNode.containsKey(ci.getCompkey())) {
                     addCoin(ci);
                 }
                 return exists;
             } else {
-                boolean exists = keyToVertexNode.containsKey(target.getHash());
+                boolean exists = keyToVertexNode.containsKey(targetTXID);
                 if (exists && !keyToEdgeNode.containsKey(ci.getCompkey())) {
                     addCoin(ci);
                 }
@@ -240,6 +240,10 @@ public class GraphViewMXGraph {
         Set<KeyValue> animations = new CopyOnWriteArraySet<>();
         List<Node> nodesToDelete = new ArrayList<>();
 
+        if (animatingTimeline != null && animatingTimeline.getStatus() == Animation.Status.RUNNING) {
+            animatingTimeline.jumpTo(animatingTimeline.getTotalDuration().subtract(Duration.ONE));
+        }
+        
         mxGraphView.getStates().entrySet().forEach(
                 entry -> {
                     mxCell cell = (mxCell) entry.getKey();
@@ -364,12 +368,8 @@ public class GraphViewMXGraph {
                 "move",
                 finishedEvent -> { graphPane.getChildren().removeAll(nodesToDelete); },
                 animations));
-        
-        playlist.stop();
-        Duration d = playlist.getCurrentTime();
-        playlist.getChildren().add(t);
-        playlist.playFrom(d);
-        
+        t.play();
+        animatingTimeline = t;
     }
 
     private Node getFXNodeForVertexCell(Object value) {
@@ -545,9 +545,9 @@ public class GraphViewMXGraph {
         // not the most efficient, some nodes could be considered multiple times for diamond merges,
         // but since this is a DAG there are no loops.
         tx.getOutputs().forEach(coin -> {
-            ITx target = coin.getTargetTX();
-            if (target != null && keyToVertexCell.containsKey(target.getHash())) {
-                findUnexpandedOutputTX(target, collector);
+            String targetID = coin.getTargetTXID();
+            if (targetID != null && keyToVertexCell.containsKey(targetID)) {
+                findUnexpandedOutputTX(ITx.query(targetID), collector);
             } else {
                 collector.add(tx);
             }
@@ -564,9 +564,9 @@ public class GraphViewMXGraph {
         // not the most efficient, some nodes could be considered multiple times for diamond TXes,
         // but since this is a DAG there are no loops.
         tx.getInputs().forEach(coin -> {
-            ITx target = coin.getSourceTX();
-            if (target != null && keyToVertexCell.containsKey(target.getHash())) {
-                findUnexpandedInputTX(target, collector);
+            String targetID = coin.getTargetTXID();
+            if (targetID != null && keyToVertexCell.containsKey(targetID)) {
+                findUnexpandedInputTX(ITx.query(targetID), collector);
             } else {
                 collector.add(tx);
             }

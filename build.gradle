@@ -19,6 +19,7 @@ repositories {
 dependencies {
     testCompile 'junit:junit:4.11'
     compile localGroovy()
+    compile 'org.glassfish:javax.json:1.0.4'
     compile files('lib/jgraphx.jar')
     compile 'com.google.guava:guava:16.0.1'
 }

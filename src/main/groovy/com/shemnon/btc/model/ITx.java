@@ -29,6 +29,8 @@ public interface ITx extends IBase {
 
     double getInputValueUSD();
 
+    long getTimeMs();
+
     String getTimeString();
 
     int getBlockHeight();

@@ -42,6 +42,10 @@ public interface ICoin extends IBase {
 
     ITx getTargetTX();
 
+    String getSourceTXID();
+
+    String getTargetTXID();
+
     String getAddr();
 
     double getValueUSD();

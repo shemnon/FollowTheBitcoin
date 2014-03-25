@@ -83,6 +83,10 @@ class CoinInfo extends JsonBase implements ICoin {
          return TXInfo.query(jsonSeed.tx_index)
     }
     
+    public String getSourceTXID() {
+        return jsonSeed.tx_index;
+    }
+    
     public TXInfo getTargetTX() {
         if (!toAddrChecked) {
             AddressInfo addr = AddressInfo.query(addr)
@@ -90,6 +94,10 @@ class CoinInfo extends JsonBase implements ICoin {
             toAddrChecked = true
         }
         return targetTX
+    }
+    
+    public String getTargetTXID() {
+        return getTargetTX().hash
     }
     
     public boolean isSpent() {
