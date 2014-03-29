@@ -176,8 +176,8 @@ public class GraphViewMXGraph {
 
         boolean inputsExpanded = tx.getInputs().stream().allMatch(ci -> {
             String srcTXID = ci.getSourceTXID();
-            boolean exists = srcTXID != null && keyToVertexNode.containsKey(srcTXID);
-            if (exists && !keyToEdgeNode.containsKey(ci.getCompkey())) {
+            boolean exists = srcTXID != null && keyToVertexCell.containsKey(srcTXID);
+            if (exists && !keyToEdgeCell.containsKey(ci.getCompkey())) {
                 addCoin(ci);
             }
             return exists;
@@ -186,14 +186,14 @@ public class GraphViewMXGraph {
         boolean outputsExpanded = tx.getOutputs().stream().allMatch(ci -> {
             String targetTXID = ci.getTargetTXID();
             if (targetTXID == null) {
-                boolean exists = keyToVertexNode.containsKey(ci.getCompkey());
-                if (exists && !keyToEdgeNode.containsKey(ci.getCompkey())) {
+                boolean exists = keyToVertexCell.containsKey(ci.getCompkey());
+                if (exists && !keyToEdgeCell.containsKey(ci.getCompkey())) {
                     addCoin(ci);
                 }
                 return exists;
             } else {
-                boolean exists = keyToVertexNode.containsKey(targetTXID);
-                if (exists && !keyToEdgeNode.containsKey(ci.getCompkey())) {
+                boolean exists = keyToVertexCell.containsKey(targetTXID);
+                if (exists && !keyToEdgeCell.containsKey(ci.getCompkey())) {
                     addCoin(ci);
                 }
                 return exists;
@@ -202,9 +202,11 @@ public class GraphViewMXGraph {
 
         Platform.runLater(() -> { 
             if (inputsExpanded && outputsExpanded) {
-                n.getStyleClass().add("expanded");
+                if (!n.getStyleClass().contains("expanded")) {
+                    n.getStyleClass().add("expanded");
+                }
             } else {
-                n.getStyleClass().remove("expanded");
+                while (n.getStyleClass().remove("expanded"));
             }
         });
     }
@@ -466,6 +468,10 @@ public class GraphViewMXGraph {
             
             keyToVertexNode.put(tx.getHash(), box);
             
+            if (tx.getInputs().get(0).isCoinbase()) {
+                box.getStyleClass().add("coinbase");
+            }
+            
             return box;
         }
     }
@@ -518,13 +524,36 @@ public class GraphViewMXGraph {
         mxGraph.removeCells(new Object[] {keyToVertexCell.get(tx.getHash())});
         tx.getOutputs().forEach(ICoin -> {
             keyToEdgeCell.remove(ICoin.getCompkey());
+            keyToEdgeNode.remove(ICoin.getCompkey());
+            keyToEdgeLabel.remove(ICoin.getCompkey());
         });
         mxGraph.removeCells(tx.getInputs().stream().map(coin -> keyToEdgeCell.get(coin.getCompkey())).toArray());
         mxGraph.removeCells(new Object[] {keyToVertexCell.get(tx.getHash())});
         tx.getInputs().forEach(ICoin -> {
             keyToEdgeCell.remove(ICoin.getCompkey());
+            keyToEdgeNode.remove(ICoin.getCompkey());
+            keyToEdgeLabel.remove(ICoin.getCompkey());
         });
         keyToVertexCell.remove(tx.getHash());
+        keyToVertexNode.remove(tx.getHash());
+    }
+
+    public void removeTXAndAllInputs(ITx tx) {
+        tx.getInputs().forEach(coin -> {
+            if (keyToEdgeCell.containsKey(coin.getCompkey())) {
+                removeTXAndAllInputs(coin.getSourceTX());
+            }
+        });
+        removeTX(tx);
+    }
+
+    public void removeTXAndAllOutputs(ITx tx) {
+        tx.getOutputs().forEach(coin -> {
+            if (keyToEdgeCell.containsKey(coin.getCompkey())) {
+                removeTXAndAllOutputs(coin.getTargetTX());
+            }
+        });
+        removeTX(tx);
     }
 
     public void removeCoinAsNode(ICoin ci) {

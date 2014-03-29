@@ -157,6 +157,10 @@ public class BCCoin extends BitcoreBase implements ICoin {
         return spendTxID != null;
     }
     
+    public boolean isCoinbase() {
+        return coinbase != null;
+    }
+    
     public String toString() {
         if (showEdgeBTC.get()) {
             return BTC_FORMAT.format(getValue());

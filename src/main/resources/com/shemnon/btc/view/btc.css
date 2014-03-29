@@ -34,6 +34,11 @@
  -fx-border-width: 1px;
 }
 
+.tx.coinbase {
+  -fx-border-style: segments(5, 3);
+  -fx-border-color: #0008;
+}
+
 .coin {
  -fx-background-color: #009900;
  -fx-border-color: #00990088;

@@ -103,7 +103,12 @@ class CoinInfo extends JsonBase implements ICoin {
     public boolean isSpent() {
         return targetTX
     }
-    
+
+    @Override
+    boolean isCoinbase() {
+        return false // ??
+    }
+
     public String toString() {
         if (showEdgeBTC.get()) {
             return BTC_FORMAT.format(getValue());

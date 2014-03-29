@@ -127,6 +127,8 @@ public class FTM {
     MenuItem miClimbSNC = new MenuItem("Climb Spend and Change");
     MenuItem miDescendSNC = new MenuItem("Descend Spend and Change");
     MenuItem miRemoveTX = new MenuItem("Remove Transaction");
+    MenuItem miPruneUpwards = new MenuItem("Prune Tx and Inputs");
+    MenuItem miPruneDownwards = new MenuItem("Prune Tx and Outputs");
     ContextMenu nodeContextMenu = new ContextMenu(
             miExpand,
             new SeparatorMenuItem(),
@@ -142,7 +144,9 @@ public class FTM {
             miClimbSNC,
             miDescendSNC,
             new SeparatorMenuItem(),
-            miRemoveTX
+            miRemoveTX,
+            miPruneUpwards,
+            miPruneDownwards
     );
     private GraphViewMXGraph gv;
     private ZoomPane zp;
@@ -508,7 +512,7 @@ public class FTM {
         offThread(() -> {
             Object o = menuSelectedItem.get();
             if (o instanceof ITx) {
-                for (ITx tx : Pyramid.descendPyramid((ITx) o, 4)) {
+                for (ITx tx : Pyramid.descendPyramid((ITx) o, 2)) {
                     expandOutputs(tx);
                 }
             }
@@ -556,6 +560,31 @@ public class FTM {
         });
     }
 
+    private void pruneUpwards(ActionEvent event) {
+        offThread(() -> {
+            Object o = menuSelectedItem.get();
+            if (o instanceof ICoin) {
+                gv.removeTXAndAllInputs(((ICoin)o).getSourceTX());
+                gv.removeCoinAsNode((ICoin) o);
+            } else if (o instanceof ITx) {
+                gv.removeTXAndAllInputs((ITx) o);
+            }
+            gv.updateExpanded();
+            graphNeedsUpdating(true);
+        });
+    }
+
+    private void pruneDownwards(ActionEvent event) {
+        offThread(() -> {
+            Object o = menuSelectedItem.get();
+            if (o instanceof ITx) {
+                gv.removeTXAndAllOutputs((ITx) o);
+            }
+            gv.updateExpanded();
+            graphNeedsUpdating(true);
+        });
+    }
+
 
     @FXML
     void initialize() {
@@ -570,6 +599,8 @@ public class FTM {
             miClimbSNC.setOnAction(this::climbSNC);
             miDescendSNC.setOnAction(this::descendSND);
             miRemoveTX.setOnAction(this::removeSelected);
+            miPruneUpwards.setOnAction(this::pruneUpwards);
+            miPruneDownwards.setOnAction(this::pruneDownwards);
 
             menuSelectedItem.addListener((obv, newN, oldN) -> {
                 if (oldN instanceof ITx) {
@@ -583,6 +614,8 @@ public class FTM {
                     miClimbSNC.setDisable(false);
                     miDescendSNC.setDisable(false);
                     miRemoveTX.setDisable(false);
+                    miPruneUpwards.setDisable(false);
+                    miPruneDownwards.setDisable(false);
                 } else if (oldN instanceof ICoin) {
                     miExpand.setDisable(false); // TODO check expanded
                     miExpandOutputs.setDisable(true); 
@@ -594,6 +627,8 @@ public class FTM {
                     miClimbSNC.setDisable(true); //FIXME this can be done
                     miDescendSNC.setDisable(true);
                     miRemoveTX.setDisable(false);
+                    miPruneUpwards.setDisable(false);
+                    miPruneDownwards.setDisable(true);
                 } else {
                     miExpand.setDisable(true);
                     miExpandOutputs.setDisable(true);
@@ -605,6 +640,8 @@ public class FTM {
                     miClimbSNC.setDisable(true);
                     miDescendSNC.setDisable(true);
                     miRemoveTX.setDisable(true);
+                    miPruneUpwards.setDisable(true);
+                    miPruneDownwards.setDisable(true);
                 }
             });
 

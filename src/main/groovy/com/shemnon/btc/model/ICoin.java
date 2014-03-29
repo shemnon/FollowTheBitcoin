@@ -55,4 +55,6 @@ public interface ICoin extends IBase {
     long getValueSatoshi();
     
     boolean isSpent();
+    
+    boolean isCoinbase();
 }
