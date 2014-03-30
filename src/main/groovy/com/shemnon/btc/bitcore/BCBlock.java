@@ -115,4 +115,10 @@ public class BCBlock extends BitcoreBase implements IBlock {
     public int hashCode() {
         return hash != null ? hash.hashCode() : 0;
     }
+
+    @Override
+    public String dump() {
+        return "{\"type\":\"BCBlock\", \"hash\":\"" + hash + "\"}";
+    }
+    
 }

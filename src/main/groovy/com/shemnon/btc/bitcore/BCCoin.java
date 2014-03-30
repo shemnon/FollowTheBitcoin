@@ -188,4 +188,9 @@ public class BCCoin extends BitcoreBase implements ICoin {
     public int hashCode() {
         return compkey != null ? compkey.hashCode() : 0;
     }
+
+    @Override
+    public String dump() {
+        return "{\"type\":\"BCBlock\", \"sourceTX\":\"" + sourceTxID + "\", \"n\":" + sourceN + "}";
+    }
 }

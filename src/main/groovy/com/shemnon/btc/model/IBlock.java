@@ -21,5 +21,7 @@ public interface IBlock extends IBase {
 
     List<ITx> getTXs();
     
+    String getHash();
+    
     int getHeight();
 }

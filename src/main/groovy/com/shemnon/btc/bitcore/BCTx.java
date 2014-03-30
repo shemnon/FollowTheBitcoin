@@ -216,5 +216,25 @@ public class BCTx extends BitcoreBase implements ITx {
         }
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        BCTx bcTx = (BCTx) o;
+
+        return !(txid != null ? !txid.equals(bcTx.txid) : bcTx.txid != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return txid != null ? txid.hashCode() : 0;
+    }
+
+    @Override
+    public String dump() {
+        return "{\"type\":\"BCBlock\", \"txid\":\"" + txid + "\"}";
+    }
     
 }

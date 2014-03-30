@@ -29,12 +29,15 @@ import com.mxgraph.view.mxCellState;
 import com.mxgraph.view.mxGraph;
 import com.mxgraph.view.mxGraphView;
 import com.shemnon.btc.coinbase.CBTransaction;
-import com.shemnon.btc.ftm.JsonBase;
 import com.shemnon.btc.model.*;
 import javafx.animation.*;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableSet;
+import javafx.collections.SetChangeListener;
+import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
@@ -51,6 +54,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * 
@@ -58,6 +62,8 @@ import java.util.function.BiConsumer;
  */
 public class GraphViewMXGraph {
     
+    ObservableSet<IBase> selectedItems = FXCollections.checkedObservableSet(
+            FXCollections.observableSet(new HashSet<>()), IBase.class);
     
     BiConsumer<MouseEvent, IBase> clickHandler;
 
@@ -78,7 +84,7 @@ public class GraphViewMXGraph {
     BooleanProperty showTxBitcoin = new SimpleBooleanProperty(true);
     BooleanProperty showTxUSD = new SimpleBooleanProperty(false);
     BooleanProperty showTxDate = new SimpleBooleanProperty(true);
-    BooleanProperty showTxHeight = new SimpleBooleanProperty(true);
+    BooleanProperty showTxHeight = new SimpleBooleanProperty(false);
     BooleanProperty showTxCoinCount = new SimpleBooleanProperty(false);
     
     BooleanProperty showCoinNodeHash = new SimpleBooleanProperty(true);
@@ -97,6 +103,8 @@ public class GraphViewMXGraph {
         mxGraphLayout = new mxHierarchicalLayout(mxGraph, SwingConstants.NORTH);
         
         graphPane = new Pane();
+        
+        selectedItems.addListener((SetChangeListener<? super IBase>) change -> updateSelectedNodes());
     }
 
     public Object addTransaction(ITx tx) {
@@ -111,7 +119,6 @@ public class GraphViewMXGraph {
             return o;
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println(((JsonBase)tx).dumpJson());
             throw e;
         }
     }
@@ -128,7 +135,6 @@ public class GraphViewMXGraph {
             return o;
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println(((JsonBase)coin).dumpJson());
             throw e;
         }
     }
@@ -158,6 +164,83 @@ public class GraphViewMXGraph {
             throw e;
         }
     }
+
+    private void updateSelectedNodes() {
+        Consumer<Object> checkCell =  cell -> {
+            Object v = ((mxCell)cell).getValue();
+            if (v instanceof ITx) {
+                updateSelected((ITx) v);
+            } else if (v instanceof ICoin) {
+                updateSelected((ICoin) v);
+            }
+        };
+        keyToVertexCell.values().forEach(checkCell);
+        keyToEdgeCell.values().forEach(checkCell);
+    }
+
+    private void updateSelected(ITx tx) {
+        if (tx == null) return;
+
+        Node n = keyToVertexNode.get(tx.getHash());
+        if (n == null) return;
+
+        boolean selected = selectedItems.contains(tx);
+
+        Platform.runLater(() -> {
+            if (selected) {
+                if (!n.getStyleClass().contains("selected")) {
+                    n.getStyleClass().add("selected");
+                }
+            } else {
+                while (n.getStyleClass().remove("selected")) ;
+            }
+        });
+    }
+
+    private void updateSelected(ICoin coin) {
+        if (coin == null) return;
+
+        boolean selected = selectedItems.contains(coin);
+        Node n = keyToVertexNode.get(coin.getCompkey());
+        if (n != null) {
+            Platform.runLater(() -> {
+                if (selected) {
+                    if (!n.getStyleClass().contains("selected")) {
+                        n.getStyleClass().add("selected");
+                    }
+                } else {
+                    while (n.getStyleClass().remove("selected")) ;
+                }
+            });
+        }
+        List<Line> lines = keyToEdgeNode.get(coin.getCompkey());
+        if (lines != null) {
+            Platform.runLater(() -> {
+                for (Line l : lines) {
+                    if (selected) {
+                        if (!l.getStyleClass().contains("selected")) {
+                            l.getStyleClass().add("selected");
+                        }
+                    } else {
+                        while (l.getStyleClass().remove("selected")) ;
+                    }
+                }
+            });
+        }
+        Label l = keyToEdgeLabel.get(coin.getCompkey());
+        if (l != null) {
+            Platform.runLater(() -> {
+                if (selected) {
+                    if (!l.getStyleClass().contains("selected")) {
+                        l.getStyleClass().add("selected");
+                    }
+                } else {
+                    while (l.getStyleClass().remove("selected")) ;
+                }
+            });
+        }
+    }
+
 
     public void updateExpanded() {
         keyToVertexCell.values().forEach(cell -> {
@@ -250,7 +333,9 @@ public class GraphViewMXGraph {
                 entry -> {
                     mxCell cell = (mxCell) entry.getKey();
                     if (cell.isEdge()) {
-                        String key = ((ICoin)cell.getValue()).getCompkey();
+                        ICoin coin = (ICoin) cell.getValue();
+                        String key = coin.getCompkey();
+                        EventHandler<MouseEvent> click = event -> clickHandler.accept(event, coin);
 
                         mxCellState cellState = entry.getValue();
                         List<Line> newLines = new ArrayList<>(cellState.getAbsolutePointCount() - 1);
@@ -274,6 +359,7 @@ public class GraphViewMXGraph {
                             mxRectangle labelPoint = cellState.getLabelBounds();
                             if (prevLabel == null) {
                                 prevLabel  = new Label(cellState.getLabel());
+                                prevLabel.setOnMouseClicked(click);
                                 prevLabel.getStyleClass().add("edgeLabel");
 
                                 prevLabel.resizeRelocate(labelPoint.getX(), labelPoint.getY(), labelPoint.getWidth(), labelPoint.getHeight());
@@ -305,7 +391,8 @@ public class GraphViewMXGraph {
                                     Line lastLine = prevEdge.get(prevEdge.size() - 1);
                                     l = new Line(lastLine.getEndX(), lastLine.getEndY(), 
                                             lastLine.getEndX(), lastLine.getEndY());
-                                    l.setFill(Color.BLACK);
+                                    l.getStyleClass().add("coinLine");
+                                    l.setOnMouseClicked(click);
                                 }
                                 newLines.add(l);
                                 animations.add(new KeyValue(l.startXProperty(), prevPoint.getX(), Interpolator.EASE_BOTH));
@@ -314,7 +401,8 @@ public class GraphViewMXGraph {
                                 animations.add(new KeyValue(l.endYProperty(), nextPoint.getY(), Interpolator.EASE_BOTH));
                             } else {
                                 Line l = new Line(prevPoint.getX(), prevPoint.getY(), nextPoint.getX(), nextPoint.getY());
-                                l.setFill(Color.BLACK);
+                                l.getStyleClass().add("coinLine");
+                                l.setOnMouseClicked(click);
                                 newLines.add(l);
                                 l.setOpacity(0.0);
                                 animations.add(new KeyValue(l.opacityProperty(), 1.0, Interpolator.EASE_IN));
@@ -620,6 +708,14 @@ public class GraphViewMXGraph {
         } else {
             return null;
         }
+    }
+
+    public ObservableSet<IBase> getSelectedItems() {
+        return selectedItems;
+    }
+
+    public void setSelectedItems(ObservableSet<IBase> selectedItems) {
+        this.selectedItems = selectedItems;
     }
 
     public boolean getShowTxHash() {

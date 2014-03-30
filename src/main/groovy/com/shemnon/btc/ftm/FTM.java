@@ -20,11 +20,11 @@ package com.shemnon.btc.ftm;
 
 import com.shemnon.btc.analysis.Pyramid;
 import com.shemnon.btc.analysis.SpendAndChange;
-import com.shemnon.btc.model.*;
 import com.shemnon.btc.coinbase.CBAddress;
 import com.shemnon.btc.coinbase.CBTransaction;
 import com.shemnon.btc.coinbase.CoinBaseAPI;
 import com.shemnon.btc.coinbase.CoinBaseOAuth;
+import com.shemnon.btc.model.*;
 import com.shemnon.btc.view.GraphViewMXGraph;
 import com.shemnon.btc.view.ZoomPane;
 import javafx.animation.*;
@@ -37,6 +37,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.WritableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.ObservableSet;
 import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -81,12 +82,10 @@ public class FTM {
     @FXML CheckBox checkUnspentBtc;
     @FXML CheckBox checkUnspentHash;
     @FXML CheckBox checkUnspentUsd;
-    @FXML ChoiceBox<String> choiceType;
     @FXML CheckBox helpCheckbox;
     @FXML AnchorPane helpPane;
     @FXML Label labelProgressBacklog;
     @FXML ToggleGroup lines;
-    @FXML HBox loginPane;
     @FXML AnchorPane mapPane;
     @FXML AnchorPane paneLogin;
     @FXML ProgressIndicator progressIndicator;
@@ -149,6 +148,7 @@ public class FTM {
             miPruneDownwards
     );
     private GraphViewMXGraph gv;
+    private ObservableSet<IBase> graphSelections;
     private ZoomPane zp;
 
     public void offThread(Runnable r) {
@@ -177,22 +177,28 @@ public class FTM {
 
     @FXML
     public void newHash(ActionEvent event) {
-        String type = choiceType.getValue();
         String hash = textSearch.getText();
         offThread(() -> {
             IBase jd;
-            switch (type) {
-                case "Transaction":
-                    jd = ITx.query(hash);
-                    break;
-                case "Address":
-                    jd = IAddress.query(hash);
-                    break;
-                case "Block":
+            // switch guessing o type
+            if (hash.length() == 64) {
+                if (hash.startsWith("00000000")) {
+                    // guess block hash
                     jd = IBlock.query(hash);
-                    break;
-                default:
-                    return;
+                } else {
+                    // guess transaction
+                    jd = ITx.query(hash);
+                }
+            } else if (hash.matches(IAddress.BITCOIN_ADDRESS_REGEX)) {
+                // guess address
+                jd = IAddress.query(hash);
+            } else if (hash.matches("\\d+")) {
+                // guess block height
+                jd = IBlock.query(hash);
+            } else {
+                // guess failure
+                //TODO complain?
+                return;
             }
             IBase jb = jd;
             expandObject(jb);
@@ -666,13 +672,42 @@ public class FTM {
             treeViewEntries.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
             treeViewEntries.getSelectionModel().getSelectedItems().addListener((InvalidationListener) event -> updateHighlights());
 
-            gv = new GraphViewMXGraph((event, tx) -> {
+            gv = new GraphViewMXGraph((event, obj) -> {
                 if (event.isPopupTrigger() || (event.getButton() == MouseButton.SECONDARY && event.getClickCount() == 1)) {
-                    menuSelectedItem.setValue(tx);
+                    // popup menu click
+                    menuSelectedItem.setValue(obj);
                     nodeContextMenu.show(event.getPickResult().getIntersectedNode(), event.getScreenX(), event.getScreenY());
-                } else if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2 && tx instanceof ITx) {
-                    expandTransaction((ITx) tx);
+                } else if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2 && obj instanceof ITx) {
+                    // double click - default action
+                    expandTransaction((ITx) obj);
                     graphNeedsUpdating(true);
+                } else {
+                    // selection click
+                    // for now punt: any modifier is in multi-select
+                    if (event.isAltDown() || event.isControlDown() || event.isShiftDown() || event.isMetaDown()) {
+                        if (graphSelections.contains(obj)) {
+                            graphSelections.remove(obj);
+                        } else {
+                            graphSelections.add(obj);
+                        }
+                    } else {
+                        // not multi-select, so set to current node
+                        graphSelections.clear();
+                        graphSelections.add(obj);
+                    }
+                }
+            });
+            graphSelections = gv.getSelectedItems();
+            graphSelections.addListener((javafx.collections.SetChangeListener<? super IBase>) change -> {
+                IBase obj = change.getElementAdded();
+                if (obj instanceof ICoin) {
+                    textSearch.setText(((ICoin)obj).getAddr());
+                } else if (obj instanceof ITx) {
+                    textSearch.setText(((ITx)obj).getHash());
+                } else if (obj instanceof IBlock) {
+                    textSearch.setText(((IBlock)obj).getHash());
+                } else {
+                    textSearch.setText("");
                 }
             });
             zp = new ZoomPane(gv.getGraphPane());

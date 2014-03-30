@@ -19,7 +19,8 @@
 package com.shemnon.btc.coinbase
 
 import com.shemnon.btc.ftm.JsonBase
-import com.shemnon.btc.model.IBase;
+import com.shemnon.btc.model.IBase
+import groovy.json.JsonOutput;
 
 /**
  * Created by shemnon on 5 Mar 2014.
@@ -45,4 +46,10 @@ public class CBAddress extends JsonBase implements IBase {
             return null;
         }
     }
+
+    public String dump() {
+        return "{\"type\":\"" + getClass().getSimpleName() + "\", \"value\":" + JsonOutput.toJson(getJsonSeed()) + "}}";
+    }
+
+
 }

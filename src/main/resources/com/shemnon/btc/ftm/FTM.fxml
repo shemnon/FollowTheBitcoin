@@ -20,14 +20,12 @@
 */        
 -->
 
-<?import javafx.collections.FXCollections?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.web.WebView?>
-<?import java.lang.String?>
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="650.0"
             prefWidth="800.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.shemnon.btc.ftm.FTM">
@@ -51,23 +49,17 @@
                         </ImageView>
                     </graphic>
                 </ToggleButton>
-                <ChoiceBox fx:id="choiceType" minHeight="-Infinity" minWidth="-Infinity" prefWidth="110.0">
-                    <items>
-                        <FXCollections fx:factory="observableArrayList">
-                            <String fx:value="Address"/>
-                            <String fx:value="Transaction"/>
-                            <String fx:value="Block"/>
-                        </FXCollections>
-                    </items>
-                    <value>
-                        <String fx:value="Address"/>
-                    </value>
-                </ChoiceBox>
-                <TextField fx:id="textSearch" alignment="BASELINE_LEFT" maxHeight="26.0" maxWidth="360.0"
-                           onAction="#newHash" prefColumnCount="32" promptText="Hash" HBox.hgrow="SOMETIMES"/>
+                <TextField fx:id="textSearch" alignment="BASELINE_LEFT" maxHeight="-Infinity" maxWidth="-Infinity"
+                           minWidth="60.0" onAction="#newHash" prefColumnCount="64" promptText="Hash or Address"
+                           HBox.hgrow="SOMETIMES">
+                    <font>
+                        <Font name="Monospaced Regular" size="13.0"/>
+                    </font>
+                </TextField>
                 <Button minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#newHash"
                         text="Add"/>
-                <Pane maxWidth="1.7976931348623157E308" prefHeight="0.0" prefWidth="0.0" HBox.hgrow="SOMETIMES"/>
+                <Pane maxWidth="1.7976931348623157E308" minWidth="10.0" prefHeight="0.0" prefWidth="0.0"
+                      HBox.hgrow="SOMETIMES"/>
                 <MenuButton minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" text="Graph">
                     <items>
                         <MenuItem mnemonicParsing="false" onAction="#onReset" text="Clear Graph"/>
@@ -304,7 +296,7 @@
                         <CheckBox fx:id="checkTxUsd" mnemonicParsing="false" text="Total in USD"/>
                         <CheckBox fx:id="checkTxDate" mnemonicParsing="false" selected="true"
                                   text="Transaction Data and Time"/>
-                        <CheckBox fx:id="checkTxHeight" mnemonicParsing="false" selected="true"
+                        <CheckBox fx:id="checkTxHeight" mnemonicParsing="false" selected="false"
                                   text="Height in Blockchain"/>
                         <CheckBox fx:id="checkTxCoins" mnemonicParsing="false" selected="false"
                                   text="Coins in, out, and unspent"/>
@@ -356,18 +348,19 @@
               AnchorPane.bottomAnchor="-40.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
             <children>
                 <Label fx:id="tipLabel" text="Send CryptoCrumb a Tip -"/>
-                <SplitMenuButton fx:id="tipButton" mnemonicParsing="false" onAction="#tip" text="One Fiat US Dollar - $1.00">
+                <SplitMenuButton fx:id="tipButton" mnemonicParsing="false" onAction="#tip"
+                                 text="One Fiat US Dollar - $1.00">
                     <items>
                         <MenuItem mnemonicParsing="false" text="One Fiat US Dollar - $1.00"/>
                         <SeparatorMenuItem mnemonicParsing="false"/>
-                        <MenuItem onAction="#tip" mnemonicParsing="false" text="Coffee - $1.38"/>
-                        <MenuItem onAction="#tip" mnemonicParsing="false" text="Tea - $1.62"/>
-                        <MenuItem onAction="#tip" mnemonicParsing="false" text="Beer - $3.64"/>
-                        <MenuItem onAction="#tip" mnemonicParsing="false" text="Gold (reddit gold) - $3.99"/>
+                        <MenuItem mnemonicParsing="false" onAction="#tip" text="Coffee - $1.38"/>
+                        <MenuItem mnemonicParsing="false" onAction="#tip" text="Tea - $1.62"/>
+                        <MenuItem mnemonicParsing="false" onAction="#tip" text="Beer - $3.64"/>
+                        <MenuItem mnemonicParsing="false" onAction="#tip" text="Gold (reddit gold) - $3.99"/>
                         <SeparatorMenuItem mnemonicParsing="false"/>
-                        <MenuItem onAction="#tip" mnemonicParsing="false" text="Dessert-like Coffee - $4.69"/>
-                        <MenuItem onAction="#tip" mnemonicParsing="false" text="A Pony (Twilight Sparkle) - $5.99"/>
-                        <MenuItem onAction="#tip" mnemonicParsing="false" text="Merkle's Root Beer - $7.99"/>
+                        <MenuItem mnemonicParsing="false" onAction="#tip" text="Dessert-like Coffee - $4.69"/>
+                        <MenuItem mnemonicParsing="false" onAction="#tip" text="A Pony (Twilight Sparkle) - $5.99"/>
+                        <MenuItem mnemonicParsing="false" onAction="#tip" text="Merkle's Root Beer - $7.99"/>
                     </items>
                 </SplitMenuButton>
                 <Button mnemonicParsing="false" onAction="#hideTipBar" styleClass="tipCloseButton" text="X"/>

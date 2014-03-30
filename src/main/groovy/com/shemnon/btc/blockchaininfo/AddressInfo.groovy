@@ -18,17 +18,15 @@
 
 package com.shemnon.btc.blockchaininfo
 
-import com.shemnon.btc.ftm.JsonBase
 import com.shemnon.btc.model.IAddress
 import com.shemnon.btc.model.ITx
 import groovy.json.JsonSlurper
 
 import java.util.concurrent.ConcurrentHashMap
-
 /**
  * Created by shemnon on 1 Mar 2014.
  */
-class AddressInfo extends JsonBase implements IAddress {
+class AddressInfo extends BlockchainInfoBase implements IAddress {
 
     static Map<String, IAddress> addrcache = new ConcurrentHashMap<>()
 
@@ -87,5 +85,5 @@ class AddressInfo extends JsonBase implements IAddress {
     String getHash160() {
         jsonSeed.hash160
     }
-    
+
 }

@@ -33,4 +33,6 @@ public interface IBase {
         }
     }
     
+    String dump();
+    
 }

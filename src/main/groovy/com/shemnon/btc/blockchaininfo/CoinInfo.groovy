@@ -17,18 +17,15 @@
 */
 
 package com.shemnon.btc.blockchaininfo
-
 import com.shemnon.btc.coinbase.CBPriceHistory
-import com.shemnon.btc.ftm.JsonBase
 import com.shemnon.btc.model.ICoin
 
 import java.util.concurrent.ConcurrentHashMap
-
 /**
  * There is no such thing as a coin, this is an abstraction of tx input/output
  * Created by shemnon on 2 Mar 2014.
  */
-class CoinInfo extends JsonBase implements ICoin {
+class CoinInfo extends BlockchainInfoBase implements ICoin {
     
     static Map<String, CoinInfo> coincache = new ConcurrentHashMap()
     

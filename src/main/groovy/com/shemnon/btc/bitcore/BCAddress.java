@@ -110,4 +110,9 @@ public class BCAddress extends BitcoreBase implements IAddress {
     public int hashCode() {
         return addrStr != null ? addrStr.hashCode() : 0;
     }
+
+    @Override
+    public String dump() {
+        return "{\"type\":\"BCAddress\", \"addr\":\"" + addrStr + "\"}";
+    }
 }

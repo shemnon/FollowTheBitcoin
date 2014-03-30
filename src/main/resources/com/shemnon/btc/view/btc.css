@@ -34,9 +34,13 @@
  -fx-border-width: 1px;
 }
 
+.tx.selected {
+ -fx-background-color: #8888ff;
+}
+
 .tx.coinbase {
   -fx-border-style: segments(5, 3);
-  -fx-border-color: #0008;
+  -fx-border-color: #F008;
 }
 
 .coin {
@@ -56,4 +60,32 @@
 .edgeLabel {
     -fx-font-size: 0.833333em; /* 10pt - 2 less than the default font */
     -fx-background-color:#fffc
+}
+
+.edgeLabel:hover {
+    -fx-background-color:#f88c
+}
+
+.edgeLabel.selected {
+    -fx-background-color:#88fc
+}
+
+.edgeLabel.selected:hover {
+    -fx-background-color:#f8fc
+}
+
+.coinLine {
+ -fx-stroke: black;
+}
+
+.coinLine:hover {
+ -fx-stroke: red;
+}
+
+.coinLine.selected {
+ -fx-stroke: blue;
+}
+
+.coinLine.selected:hover {
+ -fx-stroke: 0xf0f;
 }

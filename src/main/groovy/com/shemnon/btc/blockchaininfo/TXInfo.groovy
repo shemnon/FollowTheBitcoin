@@ -17,9 +17,7 @@
 */
 
 package com.shemnon.btc.blockchaininfo
-
 import com.shemnon.btc.coinbase.CBPriceHistory
-import com.shemnon.btc.ftm.JsonBase
 import com.shemnon.btc.model.IBlock
 import com.shemnon.btc.model.ICoin
 import com.shemnon.btc.model.ITx
@@ -27,12 +25,11 @@ import groovy.json.JsonSlurper
 
 import java.text.DateFormat
 import java.text.SimpleDateFormat
-import java.util.concurrent.ConcurrentHashMap;
-
+import java.util.concurrent.ConcurrentHashMap
 /**
  * Created by shemnon on 28 Feb 2014.
  */
-public class TXInfo extends JsonBase implements ITx {
+public class TXInfo extends BlockchainInfoBase implements ITx {
     
     static Map<String, TXInfo> txcache = new ConcurrentHashMap<>()
     

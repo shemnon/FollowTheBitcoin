@@ -18,17 +18,15 @@
 
 package com.shemnon.btc.blockchaininfo
 
-import com.shemnon.btc.ftm.JsonBase
 import com.shemnon.btc.model.IBlock
 import com.shemnon.btc.model.ITx
 import groovy.json.JsonSlurper
 
-import java.util.concurrent.ConcurrentHashMap;
-
+import java.util.concurrent.ConcurrentHashMap
 /**
  * Created by shemnon on 1 Mar 2014.
  */
-public class BlockInfo extends JsonBase implements IBlock {
+public class BlockInfo extends BlockchainInfoBase implements IBlock {
 
     static Map<String, IBlock> blockcache = new ConcurrentHashMap<>()
 
@@ -73,4 +71,8 @@ public class BlockInfo extends JsonBase implements IBlock {
         return jsonSeed.block_index
     }
 
+    @Override
+    String getHash() {
+        return jsonSeed.hash
+    }
 }

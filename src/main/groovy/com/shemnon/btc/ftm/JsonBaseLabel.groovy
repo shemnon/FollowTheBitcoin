@@ -19,6 +19,7 @@
 package com.shemnon.btc.ftm
 
 import com.shemnon.btc.model.IBase
+import groovy.json.JsonOutput
 
 /**
  * 
@@ -33,4 +34,9 @@ public class JsonBaseLabel extends JsonBase implements IBase {
     public String getLabel() {
         return jsonSeed.label
     }
+
+    public String dump() {
+        return "{\"type\":\"" + getClass().getSimpleName() + "\", \"value\":" + JsonOutput.toJson(getJsonSeed()) + "}}";
+    }
+
 }
