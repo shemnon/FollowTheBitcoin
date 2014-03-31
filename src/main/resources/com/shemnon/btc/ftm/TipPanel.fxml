@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+/*
+ * Follow the  Bitcoin
+ * Copyright (C) 2014  Danno Ferrin
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * version 2 as published by the Free Software Foundation.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/        
+-->
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<HBox xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:id="tipPanel"
+      alignment="BASELINE_CENTER" prefHeight="40.0" spacing="10.0" styleClass="bottomFade"
+      AnchorPane.bottomAnchor="-40.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+        fx:controller="com.shemnon.btc.ftm.TipPanel">
+    <children>
+        <Label fx:id="tipLabel" text="Send CryptoCrumb a Tip -"/>
+        <SplitMenuButton fx:id="tipButton" mnemonicParsing="false" onAction="#tip"
+                         text="One Fiat US Dollar - $1.00">
+            <items>
+                <MenuItem mnemonicParsing="false" text="One Fiat US Dollar - $1.00"/>
+                <SeparatorMenuItem mnemonicParsing="false"/>
+                <MenuItem mnemonicParsing="false" onAction="#tip" text="Coffee - $1.38"/>
+                <MenuItem mnemonicParsing="false" onAction="#tip" text="Tea - $1.62"/>
+                <MenuItem mnemonicParsing="false" onAction="#tip" text="Beer - $3.64"/>
+                <MenuItem mnemonicParsing="false" onAction="#tip" text="Gold (reddit gold) - $3.99"/>
+                <SeparatorMenuItem mnemonicParsing="false"/>
+                <MenuItem mnemonicParsing="false" onAction="#tip" text="Dessert-like Coffee - $4.69"/>
+                <MenuItem mnemonicParsing="false" onAction="#tip" text="A Pony (Twilight Sparkle) - $5.99"/>
+                <MenuItem mnemonicParsing="false" onAction="#tip" text="Merkle's Root Beer - $7.99"/>
+            </items>
+        </SplitMenuButton>
+        <Button mnemonicParsing="false" onAction="#hideTipBar" styleClass="tipCloseButton" text="X"/>
+    </children>
+    <padding>
+        <Insets bottom="5.0" left="5.0" right="5.0" top="10.0"/>
+    </padding>
+</HBox>

@@ -344,30 +344,5 @@
                 <Label fx:id="labelProgressBacklog"/>
             </children>
         </StackPane>
-        <HBox fx:id="tipPanel" alignment="BASELINE_CENTER" prefHeight="40.0" spacing="10.0" styleClass="bottomFade"
-              AnchorPane.bottomAnchor="-40.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
-            <children>
-                <Label fx:id="tipLabel" text="Send CryptoCrumb a Tip -"/>
-                <SplitMenuButton fx:id="tipButton" mnemonicParsing="false" onAction="#tip"
-                                 text="One Fiat US Dollar - $1.00">
-                    <items>
-                        <MenuItem mnemonicParsing="false" text="One Fiat US Dollar - $1.00"/>
-                        <SeparatorMenuItem mnemonicParsing="false"/>
-                        <MenuItem mnemonicParsing="false" onAction="#tip" text="Coffee - $1.38"/>
-                        <MenuItem mnemonicParsing="false" onAction="#tip" text="Tea - $1.62"/>
-                        <MenuItem mnemonicParsing="false" onAction="#tip" text="Beer - $3.64"/>
-                        <MenuItem mnemonicParsing="false" onAction="#tip" text="Gold (reddit gold) - $3.99"/>
-                        <SeparatorMenuItem mnemonicParsing="false"/>
-                        <MenuItem mnemonicParsing="false" onAction="#tip" text="Dessert-like Coffee - $4.69"/>
-                        <MenuItem mnemonicParsing="false" onAction="#tip" text="A Pony (Twilight Sparkle) - $5.99"/>
-                        <MenuItem mnemonicParsing="false" onAction="#tip" text="Merkle's Root Beer - $7.99"/>
-                    </items>
-                </SplitMenuButton>
-                <Button mnemonicParsing="false" onAction="#hideTipBar" styleClass="tipCloseButton" text="X"/>
-            </children>
-            <padding>
-                <Insets bottom="5.0" left="5.0" right="5.0" top="10.0"/>
-            </padding>
-        </HBox>
     </children>
 </AnchorPane>
