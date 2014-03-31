@@ -13,8 +13,7 @@ import java.util.function.Function;
  */
 public interface IAddress extends IBase {
     
-    static final String BITCOIN_ADDRESS_REGEX = "[13][abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ123456789]{27,34}";
-    static final String BITCOIN_TESTNET_ADDRESS_REGEX = "[mn][abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ123456789]{27,34}";
+    static final String BITCOIN_ADDRESS_REGEX = "[abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ123456789]{27,35}";
     
     static ObjectProperty<Function<String, IAddress>> generator = new SimpleObjectProperty<>(BCAddress::query);
     
