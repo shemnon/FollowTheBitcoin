@@ -9,7 +9,7 @@ import com.shemnon.btc.model.ITx;
  * 
  * Created by shemnon on 16 Mar 2014.
  */
-class BitcoreBase { 
+public class BitcoreBase { 
     
     protected static String urlbase = "http://live.bitcore.io/api";
     
