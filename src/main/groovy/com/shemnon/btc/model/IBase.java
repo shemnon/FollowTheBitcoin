@@ -19,6 +19,7 @@ public interface IBase {
 
 
     static String shortHash(String hash) {
+        if (hash == null) return "";
         int len = hash.length();
         if (len > 10) {
             return hash.substring(0, 6) + "..." + hash.substring(len-4);
