@@ -35,11 +35,13 @@ javafx {
     profiles {
         macosx {
             category = 'public.app-category.finance'
-            appID 'com.shemnon.ftm.FollowTheBitcoin'
+            appID 'com.shemnon.btc.ftm.FollowTheBitcoin'
+            packaging = 'mac.appStore'
+//            packaging = 'dmg'
         }
         windows {
             icons {
-                shortcut = ['shortcut-16.png', 'shortcut-32.png', 'shortcut-128.png', 'shortcut-256.png']
+                shortcut = ['shortcut-16.png', 'shortcut-32.png', 'shortcut-64.png', 'shortcut-128.png']
             }
         }
     }
@@ -57,7 +59,12 @@ javafx {
     description = '''A visual graph of the Bitcoin Blockchain and your transactions.'''
     licenseType = 'GPL v2'
     vendor = 'Danno Ferrin'
-    
+
+    verbose = true;
+    icons {
+        volume = ['shortcut-16.png', 'shortcut-32.png', 'shortcut-128.png', 'shortcut-256.png', 'shortcut-512.png']
+        shortcut = ['shortcut-16.png', 'shortcut-32.png', 'shortcut-128.png', 'shortcut-256.png', 'shortcut-512.png']
+    }
 }
 
 run {
