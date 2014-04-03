@@ -35,9 +35,9 @@ javafx {
     profiles {
         macosx {
             category = 'public.app-category.finance'
-            appID 'com.shemnon.btc.ftm.FollowTheBitcoin'
+            id 'com.shemnon.btc.ftm.FollowTheBitcoin'
             packaging = 'mac.appStore'
-//            packaging = 'dmg'
+//            packaging = 'app'
         }
         windows {
             icons {
@@ -45,8 +45,8 @@ javafx {
             }
         }
     }
-    
-    appID 'FollowTheBitcoin'
+
+    id 'com.shemnon.btc.ftm.FollowTheBitcoin'
     appName 'Follow the Bitcoin'
     mainClass = 'com.shemnon.btc.ftm.Main'
     systemProperties = [
@@ -60,11 +60,26 @@ javafx {
     licenseType = 'GPL v2'
     vendor = 'Danno Ferrin'
 
-    verbose = true;
+    verbose = true
     icons {
         volume = ['shortcut-16.png', 'shortcut-32.png', 'shortcut-128.png', 'shortcut-256.png', 'shortcut-512.png']
         shortcut = ['shortcut-16.png', 'shortcut-32.png', 'shortcut-128.png', 'shortcut-256.png', 'shortcut-512.png']
     }
+    icon {
+        href = 'shortcut-1024.png'
+        kind = 'shortcut'
+        width = 512
+        height = 512
+        scale = 2
+    }
+    icon {
+        href = 'shortcut-1024.png'
+        kind = 'volume'
+        width = 512
+        height = 512
+        scale = 2
+    }
+
 }
 
 run {
