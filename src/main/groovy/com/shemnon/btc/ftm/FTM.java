@@ -358,7 +358,7 @@ public class FTM {
         } else if (token.isEmpty()) {
             Platform.runLater(() -> {
                 // expand famous transactions
-                TreeItem<IBase> famousTransactions = treeViewEntries.getRoot().getChildren().get(1);
+                TreeItem<IBase> famousTransactions = treeViewEntries.getRoot().getChildren().get(0);
                 famousTransactions.getChildren().forEach(ti -> ti.setExpanded(true));
                 famousTransactions.setExpanded(true);
 
@@ -645,7 +645,7 @@ public class FTM {
             progressIndicator.visibleProperty().bind(not(isEmpty(futures)));
 
             //noinspection unchecked
-            treeRoot.getChildren().setAll(coinbaseTreeLabel, FamousEntries.createFamousTree());
+            treeRoot.getChildren().setAll(FamousEntries.createFamousTree(), coinbaseTreeLabel);
             //noinspection unchecked
             coinbaseTreeLabel.getChildren().setAll(coinbaseAddresses, coinbaseTransactions);
 
