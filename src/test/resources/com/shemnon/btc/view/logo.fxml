@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.text.*?>
+
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="256.0" prefWidth="256.0" style="-fx-background-color: white; -fx-background-insets: 16; -fx-background-radius: 24;" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+    <children>
+        <Path fill="TRANSPARENT" layoutX="0" layoutY="0" stroke="WHITE" strokeLineCap="ROUND" strokeWidth="20.0">
+            <elements>
+                <MoveTo x="103.0" y="78" />
+                <LineTo x="103.0" y="83.0" />
+                <LineTo x="63" y="94" />
+                <LineTo x="63" y="99" />
+            </elements>
+        </Path>
+        <Path fill="TRANSPARENT" layoutX="0" layoutY="0" stroke="BLACK" strokeLineCap="ROUND" strokeWidth="3.0">
+            <elements>
+                <MoveTo x="103.0" y="78" />
+                <LineTo x="103.0" y="83.0" />
+                <LineTo x="63" y="94" />
+                <LineTo x="63" y="99" />
+            </elements>
+        </Path>
+        <Path fill="TRANSPARENT" layoutX="0" layoutY="0" stroke="WHITE" strokeLineCap="ROUND" strokeWidth="20.0">
+            <elements>
+                <MoveTo x="152.0" y="78" />
+                <LineTo x="152.0" y="88.0" />
+                <LineTo x="165" y="168" />
+                <LineTo x="165" y="178" />
+            </elements>
+        </Path>
+        <Path fill="TRANSPARENT" layoutX="0" layoutY="0" stroke="BLACK" strokeLineCap="ROUND" strokeWidth="3.0">
+            <elements>
+                <MoveTo x="152.0" y="78" />
+                <LineTo x="152.0" y="88.0" />
+                <LineTo x="165" y="168" />
+                <LineTo x="165" y="178" />
+            </elements>
+        </Path>
+        <VBox layoutX="63.0" layoutY="24.0" minHeight="-Infinity" minWidth="-Infinity" styleClass="coinbase,tx,expanded">
+            <children>
+                <Label text="Follow">
+                    <font>
+                        <Font name="DejaVu Sans Condensed Bold" size="36.0" />
+                    </font>
+                </Label>
+            </children>
+        </VBox>
+        <VBox layoutX="24.0" layoutY="99.0" minHeight="-Infinity" minWidth="-Infinity" styleClass="coin">
+            <children>
+                <Label text="The">
+                    <font>
+                        <Font name="DejaVu Sans Condensed Bold" size="36.0" />
+                    </font>
+                </Label>
+            </children>
+        </VBox>
+        <VBox layoutX="97.0" layoutY="178.0" minHeight="-Infinity" minWidth="-Infinity" styleClass="tx">
+            <children>
+                <Label layoutX="411.0" layoutY="34.5" text="฿itcoin">
+                    <font>
+                        <Font name="DejaVu Sans Condensed Bold" size="36.0" />
+                    </font>
+                </Label>
+            </children>
+        </VBox>
+    </children>
+</Pane>
