@@ -61,25 +61,6 @@ javafx {
     vendor = 'Danno Ferrin'
 
     verbose = true
-    icons {
-        volume = ['shortcut-16.png', 'shortcut-32.png', 'shortcut-128.png', 'shortcut-256.png', 'shortcut-512.png']
-        shortcut = ['shortcut-16.png', 'shortcut-32.png', 'shortcut-128.png', 'shortcut-256.png', 'shortcut-512.png']
-    }
-    icon {
-        href = 'shortcut-1024.png'
-        kind = 'shortcut'
-        width = 512
-        height = 512
-        scale = 2
-    }
-    icon {
-        href = 'shortcut-1024.png'
-        kind = 'volume'
-        width = 512
-        height = 512
-        scale = 2
-    }
-
 }
 
 run {
